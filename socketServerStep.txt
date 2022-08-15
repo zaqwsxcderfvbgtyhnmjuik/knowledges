@@ -1,10 +1,11 @@
+/*****************************************************************服务端步骤************************************************************************************/
 #define _WINSOCK_DEPRECATED_NO_WARNINGS			//防止报错
 #include <iostream>
 #include <WinSock2.h>
 using namespace std;
- 
+
 #pragma comment(lib,"ws2_32.lib")
- 
+
 int main()
 {
 	// 第一步：WSAStartup(...) 添加socket库到应用程序中来
@@ -87,12 +88,15 @@ int main()
 				cout << "服务器断开，无接收..." << endl;
 				break;
 			}
-      // 第七步：send(...)：像客户端发送数据
+      		// 第七步：send(...)：像客户端发送数据
 			char sendToClientBuff[1024] = "服务端收到啦！";
 			send(clientSocket, sendToClientBuff, sizeof(sendToClientBuff), 0);
 		}// end while1
+		// 第八步：closesocket(...) 关闭客户端套接字
 		closesocket(clientSocket);//关闭与该客户端的套接字
 	}// end while2
+	// 第九步：关闭服务器套接字
 	closesocket(serverSocket);//关闭服务器套接字
+	// 第十步：WSACleanup(...) 移除socket库到从应用程序中
 	WSACleanup();
 }// end main
