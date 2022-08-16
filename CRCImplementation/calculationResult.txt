@@ -1,0 +1,9 @@
+// call a func to transfer a const BYTE* to a DWORD CRC code, some real test results here 
+const BYTE* <==>  DWORD CRC Code
+"a"               3904355907
+"b"               1908338681
+"c"               112844655
+
+"aa"              126491095
+"bb"              3048086446
+"cc"              3685882489
