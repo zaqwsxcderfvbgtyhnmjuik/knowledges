@@ -1,0 +1,6 @@
+// C 语言中的古老的全局类linux文件描述符的io函数
+  ::open(...)
+  ::read(...)
+  ::write(...)
+  ::close(...)
+  ::unlink(...)
