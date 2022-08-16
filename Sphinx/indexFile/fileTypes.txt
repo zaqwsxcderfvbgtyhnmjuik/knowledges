@@ -1,0 +1,53 @@
+// 1 totally eight kinds of index file type, such as 
+    .spa
+    .spd
+    .sph
+    .spi
+    .spk
+    .spm
+    .spp
+    .sps
+    
+// 2 common prefix are .sh, format like .sp*, sh means sphinx, the later character specifies the file meaning
+
+// 3 the later character meaning here
+    a: Attributes（属性）
+    d: 
+    h:
+    i:
+    k: kill-lists 信息
+    m: multi value attributes（多值属性信息）
+    p: position（位置）
+    s:
+    
+    
+// 4 firstly analysis's file here
+    .spd
+    .sph
+    .spi
+    .spp
+    .sps
+    
+// 5 The process(steps) of creating an index
+    扫描配置文件。
+    
+    创建程序内部数据结构，schema, mva attr等。
+    
+    第一次遍历文档记录，连接数据库读取创建索引的记录。
+    
+    循环分词创建spa, spp文件（临时格式）（如果inline模式只创建spp文件）, 如果非inplace模式，那么创建对应 tmp->spa, tmp->spp对应文件。
+    
+    第二次遍历文档记录，创建mva属性（非field mva attributes）。
+    
+    多路归并创建spm文件。
+    
+    更新并创建最终的spa文件，更新mva的位置信息到spa文件。
+    
+    读取临时格式的spp文件，多路归并创建spi,spd,spp文件。
+    
+    创建索引头文件sph。
+    
+    更新索引创建后的信息（例如存储当前已经简历索引的）释放资源
+    
+    
+  
