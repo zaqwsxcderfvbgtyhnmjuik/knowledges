@@ -2,4 +2,7 @@
   stride
     n.跨步
     
+  for displaying progress
+      phare.用于显示进度
+    
   
