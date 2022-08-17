@@ -12,7 +12,7 @@
 
 // 3 the later character meaning here
     a: Attributes（属性）
-    d: 
+    d: documents （文档）
     h:
     i:
     k: kill-lists 信息，使用普通索引时，由于需要使索引中的数据尽可能新，因此会产生问题。
