@@ -20,7 +20,7 @@
         如果文档同时存在于主索引和增量索引中，则可能会导致搜索问题，因为引擎将看到文档的两个版本，并且不知道如何选择正确的版本。因此，delta需要以某种方式告诉搜索，主索引中有应该忘记的已删除文档，这就是killlist
     m: multi value attributes（多值属性信息）
     p: position（位置）
-    s:
+    s: string type (which specified by the configuration file) field values 
     
     
 // 4 firstly analysis's file here
