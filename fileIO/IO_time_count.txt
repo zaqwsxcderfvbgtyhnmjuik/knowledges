@@ -1,0 +1,55 @@
+//***************************************a topic about io performance test in ms uint**************************/
+// 1 硬件配置详情
+    内存：DDR3L 8G 1600Mhz 
+      C:\WINDOWS\system32>winsat mem
+      Windows System Assessment Tool
+      > Running: Feature Enumeration ''
+      > Run Time 00:00:00.00
+      > Running: System memory performance assessment ''
+      > Run Time 00:00:05.19
+      > Memory Performance                           7346.12 MB/s
+      > Dshow Video Encode Time                      0.00000 s
+      > Dshow Video Decode Time                      0.00000 s
+      > Media Foundation Decode Time                 0.00000 s
+      > Total Run Time 00:00:06.20
+    CPU：AMD A6-7310 APU with AMD Radeon R4 Graphics       2.00 GHz
+      C:\WINDOWS\system32>winsat cpu -compression
+      Windows System Assessment Tool
+      > Running: Feature Enumeration ''
+      > Run Time 00:00:00.00
+      > Running: CPU Assessment '-compression'
+      > Run Time 00:00:10.17
+      > CPU LZW Compression                          127.41 MB/s
+      > Dshow Video Encode Time                      0.00000 s
+      > Dshow Video Decode Time                      0.00000 s
+      > Media Foundation Decode Time                 0.00000 s
+      > Total Run Time 00:00:11.14
+    硬盘读写速度：the result of running winsat disk -drive C with administrator
+      C:\WINDOWS\system32>winsat disk -drive C
+      Windows System Assessment Tool
+      > Running: Feature Enumeration ''
+      > Run Time 00:00:00.00
+      > Running: Storage Assessment '-drive C -ran -read'
+      > Run Time 00:00:14.95
+      > Running: Storage Assessment '-drive C -seq -read'
+      > Run Time 00:00:13.69
+      > Running: Storage Assessment '-drive C -seq -write'
+      > Run Time 00:00:11.00
+      > Running: Storage Assessment '-drive C -flush -seq'
+      > Run Time 00:00:09.11
+      > Running: Storage Assessment '-drive C -flush -ran'
+      > Run Time 00:00:15.34
+      > Dshow Video Encode Time                      0.00000 s
+      > Dshow Video Decode Time                      0.00000 s
+      > Media Foundation Decode Time                 0.00000 s
+      > Disk  Random 16.0 Read                       1.22 MB/s          3.4
+      > Disk  Sequential 64.0 Read                   91.13 MB/s          6.4
+      > Disk  Sequential 64.0 Write                  100.11 MB/s          6.5
+      > Average Read Time with Sequential Writes     8.599 ms          4.9
+      > Latency: 95th Percentile                     23.410 ms          4.3
+      > Latency: Maximum                             264.925 ms          7.1
+      > Average Read Time with Random Writes         14.079 ms          3.6
+      > Total Run Time 00:01:04.66
+      
+// 2 理论估算
+    内存访问频率*总线字长/8/1024/1024/1024 GB/s
