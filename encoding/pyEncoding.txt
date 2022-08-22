@@ -1,0 +1,43 @@
+//**********************a topic about encoding and decoding in python source files **************************************/
+// 1 编码存在的载体:存在一个运用程序中或一个文件中
+      控制台进程
+      .py执行时的进程
+      .py等文件中
+   
+   2 相关概念
+      代码页是编码名称别名，如936代码页表示GBK的别名
+      python2 encode和decode函数说明
+        字符串编码常用类型：utf-8,gb2312,cp936,gbk等。
+        python中，我们使用decode()和encode()来进行解码和编码
+        在python中，使用unicode类型作为编码的基础类型。即
+             
+             decode              encode
+
+        str ---------> unicode --------->str
+
+        字符串在Python内部的表示是unicode编码，因此，在做编码转换时，通常需要以unicode作为中间编码，即先将其他编码的字符串解码（decode）成unicode，再从unicode编码（encode）成另一种编码。 
+        
+        decode的作用是将其他编码的字符串转换成unicode编码，如str1.decode('gb2312')，表示将gb2312编码的字符串str1转换成unicode编码。 
+        encode的作用是将unicode编码转换成其他编码的字符串，如str2.encode('gb2312')，表示将unicode编码的字符串str2转换成gb2312编码。
+
+        假设我们现在读取的是SIMPLIFIED CHINESE_CHINA.ZHS16GBK的oracle数据库，
+
+        这时读出来的中文，需要转成UTF-8
+        print row[1].decode('gbk').encode('utf-8')
+        
+// 3 编码指定方式
+      控制台进程
+        chcp：显示当前控制台进程编码，如936
+        chcp 65001：指定当前控制台进程编码为utf-8编码
+        
+      .py文件
+        于源文件的首行键入# -*- coding: UTF-8 -*- 以指示该.py文件中的字符编码是utf-8
+        注意：
+          指定后，就需要遵守指定，否则执行.py脚本失败
+          仅仅是指示该.py文件中的字符编码的格式，未进行其他指定
+          
+      .py执行时的进程
+        .py文件执行中时，字符串变量的编码类型：
+          字符串常量：同.py文件的编码格式
+          字符串变量：无论是从各种编码格式的文件，还是强制类型转换而来的字符串变量，在python2.7中都已unicode编码格式存储着，需要借助字符串成员函数encoding将其编码为其他字符编码格式
+      
