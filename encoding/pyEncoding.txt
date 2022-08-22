@@ -40,4 +40,8 @@
         .py文件执行中时，字符串变量的编码类型：
           字符串常量：同.py文件的编码格式
           字符串变量：无论是从各种编码格式的文件，还是强制类型转换而来的字符串变量，在python2.7中都已unicode编码格式存储着，需要借助字符串成员函数encoding将其编码为其他字符编码格式
-      
+          
+          注意：
+            调用decode函数时，需要设置默认的encoding编码格式，否则无法识别像utf8的串，进而不能将其转换成unicode编码
+                  reload(sys)
+                  sys.setdefaultencoding('utf-8')
