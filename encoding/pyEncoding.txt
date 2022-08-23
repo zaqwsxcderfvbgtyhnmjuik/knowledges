@@ -45,3 +45,10 @@
             调用decode函数时，需要设置默认的encoding编码格式，否则无法识别像utf8的串，进而不能将其转换成unicode编码
                   reload(sys)
                   sys.setdefaultencoding('utf-8')
+                  
+// 4 python2.7中u字符串转编码
+      python2.7中u字符串转码
+            print(u'\xe4\xba\xac'.encode('raw_unicode_escape')
+                  输出：京
+            print('\u559c\u6b22\u4e00\u4e2a\u4eba'.decode('unicode-escape'))
+                  输出：喜欢一个人
