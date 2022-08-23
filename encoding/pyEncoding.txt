@@ -52,3 +52,10 @@
                   输出：京
             print('\u559c\u6b22\u4e00\u4e2a\u4eba'.decode('unicode-escape'))
                   输出：喜欢一个人
+      总结：
+            任意编码的字符串，如果内容是unicode码，如：‘\u53eb\u6211’，使用decode('unicode-escape')命令,对字符串内容按照unicode解码后得到其对应的汉字。
+            若某字符串的内容为bytes形式, 如 a = '\xe7\x8e\x8b\xe8\x80\x85\xe5\x86\x9c\xe8\x8d\xaf'
+                  可使用encode('raw_unicode_escape')将此str转化为bytes, 再decode为str
+                  可使用decode('raw_unicode_escape')输出内容为bytes形式的字符串
+
+
