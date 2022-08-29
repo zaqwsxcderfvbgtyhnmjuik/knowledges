@@ -13,4 +13,8 @@
   morphology
     n.形态学
       the study of the forms of things/研究事物的形式
+      
+  exact 
+    a.精确的
+      not approximated in any way; precise./不以任何形式的接近，精确的
   
