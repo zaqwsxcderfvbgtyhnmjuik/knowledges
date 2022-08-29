@@ -9,4 +9,8 @@
     n.性状，特点
       a distinguishing quality or characteristic, typically one belonging to a person.
       he was a letter-of-the-law man, a common trait among coaches
+      
+  morphology
+    n.形态学
+      the study of the forms of things/研究事物的形式
   
