@@ -51,4 +51,7 @@
       clean (an area) by brushing away dirt or litter./通过刷掉污垢或垃圾来清洁（一个区域）。
       I've swept the floor/我打扫了地板
 
+  fixed-size
+    a.固定大小的
+      dynamically allocated fixed-size vector/动态分配的固定大小向量
   
