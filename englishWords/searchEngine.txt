@@ -45,5 +45,10 @@
     a.内部的
       of or situated on the inside./属于或位于内部
       the tube had an internal diameter of 1.1 mm/该管的内径为 1.1 mm
+      
+  sweep
+    v.清扫
+      clean (an area) by brushing away dirt or litter./通过刷掉污垢或垃圾来清洁（一个区域）。
+      I've swept the floor/我打扫了地板
 
   
