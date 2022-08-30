@@ -33,5 +33,10 @@
     n.竞技场
       a level area surrounded by seats for spectators, in which sports, entertainments, and other public events are held./一个由观众座位环绕的平坦区域，在此举行体育、娱乐和其他公共活动。
       
+  prefix/infix/suffix
+    n.前缀/中缀/后缀
+    
+    
+      
 
   
