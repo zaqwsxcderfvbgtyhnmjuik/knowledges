@@ -37,6 +37,12 @@
     n.前缀/中缀/后缀
     
     
+  dismiss
+    v.解雇
+      order or allow to leave; send away./命令或允许离开，支使
+      she dismissed the taxi at the corner of the road/她在马路拐角叫停了出租车
+    
+    
       
 
   
