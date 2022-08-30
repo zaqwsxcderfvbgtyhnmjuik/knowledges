@@ -23,4 +23,9 @@
     n.阈值，临界值
       the magnitude or intensity that must be exceeded for a certain reaction, phenomenon, result, or condition to occur or be manifested.
       nothing happens until the signal passes the threshold/在信号通过阈值之前什么都不会发生
+      
+  snippet
+    n.片段
+      a small piece or brief extract./一小片或者简短提取物
+      snippets of information about the war/关于战争的信息片段
   
