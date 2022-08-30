@@ -36,13 +36,14 @@
   prefix/infix/suffix
     n.前缀/中缀/后缀
     
-    
   dismiss
     v.解雇
       order or allow to leave; send away./命令或允许离开，支使
       she dismissed the taxi at the corner of the road/她在马路拐角叫停了出租车
     
-    
-      
+  internal
+    a.内部的
+      of or situated on the inside./属于或位于内部
+      the tube had an internal diameter of 1.1 mm/该管的内径为 1.1 mm
 
   
