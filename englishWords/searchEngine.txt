@@ -28,4 +28,10 @@
     n.片段
       a small piece or brief extract./一小片或者简短提取物
       snippets of information about the war/关于战争的信息片段
+      
+  arena
+    n.竞技场
+      a level area surrounded by seats for spectators, in which sports, entertainments, and other public events are held./一个由观众座位环绕的平坦区域，在此举行体育、娱乐和其他公共活动。
+      
+
   
