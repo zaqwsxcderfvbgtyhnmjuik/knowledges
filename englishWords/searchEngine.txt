@@ -54,4 +54,22 @@
   fixed-size
     a.固定大小的
       dynamically allocated fixed-size vector/动态分配的固定大小向量
+      
+  sane
+    a.心智健全的
+      (of a person) of sound mind; not mad or mentally ill./（人的）心智健全的； 不是疯了，也不是精神病。
+      hard work kept me sane/努力工作让我保持清醒
+  
+  occasion
+    n.机会，时机，场合 
+      articular time or instance of an event./定时间或事件的实例。
+      on one occasion I stayed up until two in the morning/有一次我熬夜到凌晨两点
+      wait for a timely occasion/等待时机
+      
+  throttle
+    n.风门，节流阀
+      a device controlling the flow of fuel or power to an engine.
+      the engines were at full throttle/引擎全速运转
+      
+
   
