@@ -83,3 +83,9 @@
     n.词库
       a book that lists words in groups of synonyms and related concepts./一本以同义词组和相关概念列出单词的书。
       
+  corpus
+    n.语料库
+      a collection of written texts, especially the entire works of a particular author or a body of writing on a particular subject./书面文本的集合，尤其是特定作者的全部作品或关于特定主题的著作。
+      the Darwinian corpus/达尔文语料库。
+
+
