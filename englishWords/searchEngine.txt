@@ -79,3 +79,7 @@
     n.反义词
       a word opposite in meaning(在...方面对立) to another (e.g. bad and good ).
   
+  thesaurus
+    n.词库
+      a book that lists words in groups of synonyms and related concepts./一本以同义词组和相关概念列出单词的书。
+      
