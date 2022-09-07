@@ -1,0 +1,29 @@
+/// this topic is going to discuss the .* and ->* oprator usage with along a typical code /// 
+
+// 1. a document for detail grammar of .* and ->*
+  https://blog.csdn.net/weixin_43919932/article/details/109605655
+  
+// 2. typical code 
+template < typename T, typename C >
+struct MemberLess_T
+{
+	const T C::* m_pMember;
+
+	explicit MemberLess_T ( T C::* pMember )
+		: m_pMember ( pMember )
+	{}
+
+	inline bool IsLess ( const C & a, const C & b ) const
+	{
+		return ( (&a)->*m_pMember ) < ( (&b)->*m_pMember );
+	}
+};
+
+template < typename T, typename C >
+inline MemberLess_T<T,C>
+MemberLess ( T C::* pMember )
+{
+	return MemberLess_T<T,C> ( pMember );
+}
+
+  
