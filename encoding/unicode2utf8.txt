@@ -1,0 +1,85 @@
+/// this is a topic about unicode code to utf-8 code ///
+// 1. background:为了结束各国群魔乱舞，百家争抢的编码乱象
+    Unicode 为世界上所有字符都分配了一个唯一的数字编号，这个编号范围从 0x000000 到 0x10FFFF (十六进制)，有 110 多万。
+      每个字符都有一个唯一的 Unicode 编号，这个编号一般写成 16 进制，在前面加上 U+。例如：“马”的 Unicode 是U+9A6C；
+      Unicode 就相当于一张表，建立了字符与编号之间的联系；
+      它是一种规定，Unicode 本身只规定了每个字符的数字编号是多少，并没有规定这个编号如何存储。
+      
+// 2. 三字节unicode编号怎么对应到二进制表示呢？有多种方案：主要有 UTF-8，UTF-16，UTF-32。
+    
+    UTF-32：32 bit Unicode Transformation Format：32位Unicode转换格式
+      处理方式（unicode->UTF-32）：
+        就是字符所对应编号的整数二进制形式，四个字节。这个就是直接转换。 比如马的 Unicode 为：U+9A6C，那么直接转化为二进制，它的表示就为：1001 1010 0110 1100；
+        这里需要说明的是，转换成二进制后计算机存储的问题；
+          我们知道，计算机在存储器中排列字节有两种方式：大端法和小端法，大端法就是将高位字节放到底地址处，比如 0x1234, 计算机用两个字节存储，一个是高位字节 0x12,一个是低位字节 0x34
+      
+      处理方式（UTF-32->unicode）
+        UTF-32 用四个字节表示，处理单元为四个字节（一次拿到四个字节进行处理）;
+        如果不分大小端的话，那么就会出现解读错误，比如我们一次要处理四个字节 12 34 56 78，这四个字节是表示 0x12 34 56 78 还是表示 0x78 56 34 12？不同的解释最终表示的值不一样。
+        我们可以根据他们高低字节的存储位置来判断他们所代表的含义，所以在编码方式中有 UTF-32BE 和 UTF-32LE，分别对应大端和小端，来正确地解释多个字节（这里是四个字节）的含义。
+       
+       
+    UTF-16：
+      处理方式（unicode->UTF-16）
+        UTF-16 使用变长字节表示
+          ① 对于编号在 U+0000 到 U+FFFF 的字符（常用字符集），直接用两个字节表示。
+          ② 编号在 U+10000 到 U+10FFFF 之间的字符，需要用四个字节表示。
+          同样，UTF-16 也有字节的顺序问题（大小端），所以就有 UTF-16BE 表示大端，UTF-16LE 表示小端。
+      处理方式（UTF-16->unicode）
+        每次读取两字节，注意区分大小端；
+    
+    UTF-8：
+      处理方式（unicode->UTF-8）
+        UTF-8 使用变长字节表示
+          ① 对于单字节的符号，字节的第一位设为 0，后面的7位为这个符号的 Unicode 码，因此对于英文字母，UTF-8 编码和 ASCII 码是相同的。
+          ② 对于n字节的符号（n>1）,第一个字节的前 n 位都设为 1，第 n+1 位设为 0；后面字节的前两位一律设为 10，剩下的没有提及的二进制位，全部为这个符号的 Unicode 码 。
+          举个例子：
+            比如说一个字符的 Unicode 编码是 130，显然按照 UTF-8 的规则一个字节是表示不了它（因为如果是一个字节的话前面的一位必须是 0），所以需要两个字节(n = 2)。
+            根据规则，第一个字节的前 2 位都设为 1，第 3(2+1) 位设为 0，则第一个字节为：110X XXXX，后面字节的前两位一律设为 10，后面只剩下一个字节，所以后面的字节为：10XX XXXX。
+            所以它的格式为 110XXXXX 10XXXXXX 。
+            130的二进制是1000 0010，将该二进制从右侧个位到左侧最高位逐个bit从右侧个位到左侧高位进行填充取代X，没有被填充取代的X填0取代X，最后是 110_00010 10_000010，就是unicode编码130对应的UTF-8编码
+          下面我们来具体看看具体的 Unicode 编号范围与对应的 UTF-8 二进制格式
+            unicode编号范围(编号对应的十进制数)(位数)              二进制格式
+              0x00 - 0x7F (0 - 127)(7 bits)                   0XXX_XXXX
+              
+              0x80 - 0x7FF (128 - 2047)(11 bits)              110X_XXXX 10XX_XXXX
+              0x800 - 0xFFFF (2048 - 65535)(16 bits)          1110_XXXX 10XX_XXXX 10XX_XXXX
+              0x1000 - 0x10FFFF (65536 - 1114111)(18 bits)    11110XXX 10XX_XXXX 10XX_XXXX
+      处理方式（UTF-8->unicode）
+        按照上述两个规则解析即可
+          解析消息头部，获得消息体长度，进一步对消息进行位运算即可获得unicode编码；无需考虑大小端。
+
+
+// 3. transfor unicode code to utf8 code C++ code
+  // pBuf:to store the utf8 code
+  // unicode:unicode code which need to transfer itself to utf8 code
+  int encodeUTF8(BYTE* pBuf, int unicode)
+  {
+    if (unicode < 0x80)
+    {
+      pBuf[0] = (BYTE)unicode;
+      return 1;
+    }
+
+    if (unicode < 0x800)
+    {
+      pBuf[0] = (BYTE)( ( unicode>>6 0x1F ) | 0xC0 );
+      pBuf[1] = (BYTE)( ( unicode & 0x3F ) | 0x80 );
+      return 2;
+    }
+
+    if (unicode < 0x10000)
+    {
+      pBuf[0] = (BYTE)( ( unicode>>12 & 0x0F ) | 0xE0 );
+      pBuf[1] = (BYTE)( ( unicode>>6 & 0x3F ) | 0x80 );
+      pBuf[2] = (BYTE)( ( unicode & 0x3F ) | 0x80 );
+      return 3;
+    }
+
+    pBuf[0] = (BYTE)( ( unicode>>18 & 0x07 ) | 0xF0 );
+    pBuf[1] = (BYTE)( ( unicode>>12 & 0x3F ) | 0x80 );
+    pBuf[2] = (BYTE)( ( unicode>>6 & 0x3F ) | 0x80 );
+    pBuf[3] = (BYTE)( ( unicode & 0x3F ) | 0x80 );
+    return 4;
+
+  }
