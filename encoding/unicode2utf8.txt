@@ -4,9 +4,17 @@
       每个字符都有一个唯一的 Unicode 编号，这个编号一般写成 16 进制，在前面加上 U+。例如：“马”的 Unicode 是U+9A6C；
       Unicode 就相当于一张表，建立了字符与编号之间的联系；
       它是一种规定，Unicode 本身只规定了每个字符的数字编号是多少，并没有规定这个编号如何存储。
-      
+    unicode 分为共16个平面
+        基本多文种平面（Basic Multilingual Plane, BMP），也称第0平面
+        平面1 (10000–1FFFF): 多文种补充平面（Supplementary Multilingual Plane, SMP）.
+        平面2 (20000–2FFFF): 表意文字补充平面（Supplementary Ideographic Plane, SIP）.
+        平面3 (30000–3FFFF): 表意文字第三平面（Tertiary Ideographic Plane, TIP）.
+        ...
+        平面14 (E0000–EFFFF): 特别用途补充平面（Supplementary Special-purpose Plane, SSP）
+        平面15 (F0000–FFFFF)保留作为私人使用区（Private Use Area, PUA）
+        平面16 (100000–10FFFF)，保留作为私人使用区（Private Use Area, PUA）
+        
 // 2. 三字节unicode编号怎么对应到二进制表示呢？有多种方案：主要有 UTF-8，UTF-16，UTF-32。
-    
     UTF-32：32 bit Unicode Transformation Format：32位Unicode转换格式
       处理方式（unicode->UTF-32）：
         就是字符所对应编号的整数二进制形式，四个字节。这个就是直接转换。 比如马的 Unicode 为：U+9A6C，那么直接转化为二进制，它的表示就为：1001 1010 0110 1100；
@@ -24,9 +32,13 @@
         UTF-16 使用变长字节表示
           ① 对于编号在 U+0000 到 U+FFFF 的字符（常用字符集），直接用两个字节表示。
           ② 编号在 U+10000 到 U+10FFFF 之间的字符，需要用四个字节表示。
+            *对于 Unicode 码小于 0x10000 的字符， 使用 2 个字节存储，并且是直接存储 Unicode 码，不用进行编码转换
+            *对于 Unicode 码在 0x10000 和 0x10FFFF 之间的字符，使用 4 个字节存储，这 4 个字节分成前后两部分，每个部分各两个字节，其中，前面两个字节的前 6 位二进制固定为 110110，后面两个字节的前 6 位二进制固定为 110111, 前后部分各剩余 10 位二进制表示符号的 Unicode 码 减去 0x10000 的结果
+            *大于 0x10FFFF 的 Unicode 码无法用 UTF-16 编码
           同样，UTF-16 也有字节的顺序问题（大小端），所以就有 UTF-16BE 表示大端，UTF-16LE 表示小端。
       处理方式（UTF-16->unicode）
         每次读取两字节，注意区分大小端；
+    
     
     UTF-8：
       处理方式（unicode->UTF-8）
