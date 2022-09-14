@@ -1,3 +1,5 @@
 /// this is a topic about a link list type skipList datastructure ///
 
 // 1.
+
+// 2.
