@@ -1,3 +1,0 @@
-/// this is a topic about bubble sort ///
-
-// 1
