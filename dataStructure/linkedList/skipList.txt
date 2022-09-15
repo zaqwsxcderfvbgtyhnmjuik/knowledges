@@ -1,5 +1,155 @@
 /// this is a topic about a link list type skipList datastructure ///
 
-// 1.
+// 代码思路与实现
+// Skip List定义
+      像下面这样（初中物理经常这样用，这里我也盗用下）：
+          一个跳表，应该具有以下特征：
+            a.一个跳表应该有几个层（level）组成；
+            b.跳表的第一层包含所有的元素；
+            c.每一层都是一个有序的链表；
+            d.如果元素x出现在第i层，则所有比i小的层都包含x；
+            e.第i层的元素通过一个down指针指向下一层拥有相同值的元素；
+            f.在每一层中，-1和1两个元素都出现(分别表示INT_MIN和INT_MAX)；
+            g.Top指针指向最高层的第一个元素。
+// Skip List构造步骤
+    1.给定一个有序的链表
+    2.选择链表中最大和最小的元素，然后从其他元素中按照一定的算法(随机)选出一些元素，将这些元素组成有序链表。这个新的链表称为一层，原链表称为下一层。
+    3.为刚选出的每个元素添加一个指针域，这个指针指向下一层中值同自己相等的(克隆前的自己)元素。top指针指向该层首元素。
+    4.重复2、3步骤，直到不再能选择出除最大最小的元素以外的元素。
+    
+// 查找
+    目的：在跳表中查找一个元素x
+    步骤：在跳表中查找一个元素x，按照如下几个步骤进行：
+        1.从最上层的链表的开头开始
+        2.假设当前位置为p，它向右指向的节点为q（p与q不一定相邻），且q的值为y。将y与x作比较：
+          (1)x=y 输出查询成功及相关信息
+          (2)x>y 从p向右移动到q的位置
+          (3)x<y 从p向下移动一格
+        3.如果当前位置在最底层的原始链表中，且还要往下移动的话，则输出查询失败
+// 插入
+    目的：向跳表中插入一个元素x
+    首先明确，向跳表中插入一个元素，相当于在表中插入一列从S0中的某一位置出发向上的连续一段元素。有两个参数需要确定，即插入列的位置以及它的"高度"。
+      关于插入的位置，我们先利用跳表的查找功能，找到比x小的最大的数y。根据跳表中所有链均是 递增序列 的原则，x必然就插在y的后面。
+      关于插入列的高度，较前者来说显得更加重要，也更加难以确定。由于它的不确定性，使得不同的决策可能会导致截然不同的算法效率。为了使插入数据之后，保持该数据结构进行各种操作均为O(log2(n))复杂度的性质，我们引入随机化算法（Randomized Algorithms）。
+          我们定义一个随机决策模块，它的大致内容如下：
+            1.产生一个0到1的随机数r：r<--random()
+              如果r小于一个常数p，则执行方案A：if r < p then do A
+              如果r不小于一个常数p，则执行方案B：else do B
+            2.初始时，列高为1。插入元素时。不停地执行随机决策模块。如果要求执行的是A操作，则将列的高度加1，并且继续反复执行随机决策模块。直到第i次，我们结束决策，并向跳表中插入一个高度为i的列。
 
-// 2.
+// 删除
+    目的：从跳表中删除一个元素x
+    步骤：删除的步骤分为三个
+        1.在跳表中查找到这个元素的位置，如果未找到，则退出
+        2.将该元素所在整列从表中删除
+        3.将多余的"空链"(一层为一个链，若成了空链则删除该层，层数减少1)删除
+        
+// 跳表示意图
+      [top]
+        ↓
+S2    [-1]------------→[21]-------→[37]--------------------→[1]
+      ↓                ↓           ↓                        ↓    
+S1    [-1]-→[7]-------→[21]-------→[37]-→[71]--------------→[1]
+      ↓     ↓          ↓           ↓     ↓                  ↓
+S0    [-1]-→[7]-→[14]-→[21]-→[32]-→[37]-→[71]-→[85]-→[117]-→[1]
+
+// 定义跳表的数据结构
+  // 首先是每个节点的数据结构
+    typedef struct nodeStructure {
+        int key;
+        int value;
+        struct nodeStructure* forward[1];
+    }nodeStructure;
+    
+  // 其次是跳表的结构
+    typedef struct skiplist {
+        int level;
+        nodeStructure* header;
+    }skiplist;
+    
+// 定义跳表的基本操作
+  // 首先是节点的创建
+  nodeStructure* createNode(int level, int key, int value) {
+    nodeStructure* ns = (nodeStructure*)malloc(sizeof(nodeStructure)+level*sizeof(nodeStructure*));// 共申请level+1个sizeof(nodeStructure*)字节内存块;通过nodeStructure成员数组forward[]通过下标访问。
+    ns->key=key;
+    ns->value=value;
+    return ns;
+  }
+  
+  // 跳表的初始化
+  // 需要初始化头部，并使头部每层(根据事先定义的MAX_LEVEL)指向末尾（NULL）
+  skiplist* createSkiplist() {
+      skiplist* sl=(skiplist*)malloc(sizeof(skiplist));
+      sl->level=0; // 跳表共有多少层
+      sl->header=createNode(MAX_LEVEL-1, 0, 0);
+      
+      // 初始化第一列
+      for (int i=0; i<MAX_LEVEL; i++) {
+          sl->header->forward[i]=NULL;
+      }
+      
+      return sl;
+  }
+  
+  // 插入元素
+  // 插入元素的时候元素所占有的层数完全是随机的，通过随机算法产生
+  int randomLevel() {
+      int k=1;
+      while(rand()%2)
+          k++;
+      k=k<MAX_LEVEL ? k : MAX_LEVEL;
+      
+      return k;
+  }
+  // 跳表的插入需要三个步骤：
+    // a.查找到在每层待插入的位置
+    // b.随机产生一个层数
+    // c. 从高层至下插入，插入时算法（）同普通链表的插入完全相同
+  bool insert(skiplist* sl, int key, int value) {
+      nodeStructure* update[MAX_LEVEL];
+      nodeStructure *p=NULL, *q=NULL;// do not use nodeStructure *p, *q=NULL; due to using without being initialized，in release model is a random number
+      
+      
+  
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+
+
+    
+          
