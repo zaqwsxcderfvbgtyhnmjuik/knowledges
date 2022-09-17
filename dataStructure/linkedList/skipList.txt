@@ -152,52 +152,49 @@ S0    [-1]-→[7]-→[14]-→[21]-→[32]-→[37]-→[71]-→[85]-→[117]-→[1
     // a.查找到在每层待插入的位置
     // b.随机产生一个层数
     // c. 从高层至下插入，插入时算法（）同普通链表的插入完全相同
-  bool insert(skiplist* sl, int key, int value) {
+  //插入节点  
+  bool insert(skiplist* sl, int key, int value)
+  {
       nodeStructure* update[MAX_LEVEL];
-      nodeStructure *p=NULL, *q=NULL;// do not use nodeStructure *p, *q=NULL; due to using without being initialized，in release model is a random number
-      
-      p=sl->header;
-      int k=kl->level;
-      
-      /// 从最高层往下查找需要插入的位置
-      
-      // 填充update
-      for (int i=k-1; i>=0; i--) {
-            while((q=p->forward[i])&&(q->key<key))
-            {
-                  p=q;
-            } 
-            update[i]=p; // p:比key小的keys中最大的一个key;
+      nodeStructure* p, * q = NULL;
+      p = sl->header;
+      int k = sl->level;
+      //从最高层往下查找需要插入的位置  
+      //填充update  
+      for (int i = k - 1; i >= 0; i--) {
+          while ((q = p->forward[i]) && (q->key < key))
+          {
+              p = q;
+          }
+          update[i] = p;
       }
-      
-      // 不能插入相同的key
-      if(q&&q->key==key)// q:比key大的keys中最小的一个key; 
-            return false;
-            
-      /// 产生一个随机层数K
-      k=randomLevel();
-      
-      // 更新跳表的level
-      if (k>sl->level) {
-            for (int i=sl->level; i<k; i++) {
-                  update[i]=sl->header;
-            }
-            
-            sl->level=k;
+      //不能插入相同的key  
+      if (q && q->key == key)
+      {
+          return false;
       }
-      
-      /// 从高层至下插入
-      
-      // 新建一个待插入节点q
-      q=createNode(k, key, value);
-      
-      // 逐层更新节点指针，和普通的链表插入一样
-      for (int i=0; i<k; i++) {
-            q->forward[i]=update[i]->forward[i];
-            update[i]->forward[i]=q;
+
+      //产生一个随机层数K  
+      //新建一个待插入节点q  
+      //一层一层插入  
+      k = randomLevel();
+      //更新跳表的level  
+      if (k > (sl->level))
+      {
+          for (int i = sl->level; i < k; i++) {
+              update[i] = sl->header;
+          }
+          sl->level = k;
       }
-      
-      /// 插入成功
+
+      q = createNode(k-1, key, value);// 节点组成中自带一个size为1的结点指针数组
+      //逐层更新节点的指针，和普通列表插入一样  
+      for (int i = 0; i < k; i++)
+      {
+          q->forward[i] = update[i]->forward[i];
+          update[i]->forward[i] = q;
+      }
+      // 插入成功
       return true;
   }
   
@@ -268,205 +265,260 @@ S0    [-1]-→[7]-→[14]-→[21]-→[32]-→[37]-→[71]-→[85]-→[117]-→[1
   }
   
   // 对比
-
+    //a.顺序数组+二分查找，查找时间复杂度log2(n)，实现较为简单，不能实现区间查找
+    //b.avl平衡树，如红黑树，查找时间复杂度log2(n)，实现较为复杂，实现区间查找的复杂度不能近似达到log2(n)
+    //c.跳表，查找时间复杂度近似log2(n)，实现较为简单，实现区间查找的复杂度近似达到log2(n)
+    
   // 总结
-  
+  不过这个跳表不是理论上的下层每隔两个往上抽取一个作为索引，每插入一个元素，其插入的位置是唯一的，但其插入的层数采用了随机策略，不能体现理论上的下层每隔两个往上抽取一个作为索引，所以时间复杂度也就不是理论上的2*log2(n)+2
+
+  不过随机算法的好处在于不用固守理论教条，在插入和删除和搜索时候近似log2n，如果固守理论准则，那么仅仅只有查找的时候严格遵循2*log2(n)+2的复杂度，但是因为要严格遵循理论准则，那么插入和删除每次都等于重建索引，时间复杂度至少是O(n)，如果对于静态数据的静态索引，不需要频繁插入删除那么使用严格遵循理论的代码较好，每次查询性能优秀，不插入和删除。对于动态数据而言，存在频繁的插入和删除那么就是采用随机算法的跳表较为优秀
   
   //附录
     // 完整代码
-  #include<stdio.h>  
-  #include<stdlib.h>  
-
-  #define MAX_LEVEL 10 //最大层数  
-
-  //节点  
-  typedef  struct nodeStructure  
-  {  
-      int key;  
-      int value;  
-      struct nodeStructure *forward[1];  
-  }nodeStructure;  
-
-  //跳表  
-  typedef  struct skiplist  
-  {  
-      int level;  
-      nodeStructure *header;  
-  }skiplist;  
-
-  //创建节点  
-  nodeStructure* createNode(int level,int key,int value)  
-  {  
-      nodeStructure *ns=(nodeStructure *)malloc(sizeof(nodeStructure)+level*sizeof(nodeStructure*));    
-      ns->key=key;    
-      ns->value=value;    
-      return ns;    
-  }  
-
-  //初始化跳表  
-  skiplist* createSkiplist()  
-  {  
-      skiplist *sl=(skiplist *)malloc(sizeof(skiplist));    
-      sl->level=0;    
-      sl->header=createNode(MAX_LEVEL-1,0,0);    
-      for(int i=0;i<MAX_LEVEL;i++)    
-      {    
-          sl->header->forward[i]=NULL;    
-      }  
-      return sl;  
-  }  
-
-  //随机产生层数  
-  int randomLevel()    
-  {  
-      int k=1;  
-      while (rand()%2)    
-          k++;    
-      k=(k<MAX_LEVEL)?k:MAX_LEVEL;  
-      return k;    
-  }  
-
-  //插入节点  
-  bool insert(skiplist *sl,int key,int value)  
-  {  
-      nodeStructure *update[MAX_LEVEL];  
-      nodeStructure *p, *q = NULL;  
-      p=sl->header;  
-      int k=sl->level;  
-      //从最高层往下查找需要插入的位置  
-      //填充update  
-      for(int i=k-1; i >= 0; i--){  
-          while((q=p->forward[i])&&(q->key<key))  
-          {  
-              p=q;  
-          }  
-          update[i]=p;  
-      }  
-      //不能插入相同的key  
-      if(q&&q->key==key)  
-      {  
-          return false;  
-      }  
-
-      //产生一个随机层数K  
-      //新建一个待插入节点q  
-      //一层一层插入  
-      k=randomLevel();  
-      //更新跳表的level  
-      if(k>(sl->level))  
-      {  
-          for(int i=sl->level; i < k; i++){  
-              update[i] = sl->header;  
-          }  
-          sl->level=k;  
-      }  
-
-      q=createNode(k,key,value);  
-      //逐层更新节点的指针，和普通列表插入一样  
-      for(int i=0;i<k;i++)  
-      {  
-          q->forward[i]=update[i]->forward[i];  
-          update[i]->forward[i]=q;  
-      }  
-      return true;  
-  }  
-
-  //搜索指定key的value  
-  int search(skiplist *sl,int key)  
-  {  
-      nodeStructure *p,*q=NULL;  
-      p=sl->header;  
-      //从最高层开始搜  
-      int k=sl->level;  
-      for(int i=k-1; i >= 0; i--){  
-          while((q=p->forward[i])&&(q->key<=key))  
-          {  
-              if(q->key == key)  
-              {  
-                  return q->value;  
-              }  
-              p=q;  
-          }  
-      }  
-      return NULL;  
-  }  
-
-  //删除指定的key  
-  bool deleteSL(skiplist *sl,int key)  
-  {  
-      nodeStructure *update[MAX_LEVEL];  
-      nodeStructure *p,*q=NULL;  
-      p=sl->header;  
-      //从最高层开始搜  
-      int k=sl->level;  
-      for(int i=k-1; i >= 0; i--){  
-          while((q=p->forward[i])&&(q->key<key))  
-          {  
-              p=q;  
-          }  
-          update[i]=p;  
-      }  
-      if(q&&q->key==key)  
-      {  
-          //逐层删除，和普通列表删除一样  
-          for(int i=0; i<sl->level; i++){    
-              if(update[i]->forward[i]==q){    
-                  update[i]->forward[i]=q->forward[i];    
-              }  
-          }   
-          free(q);  
-          //如果删除的是最大层的节点，那么需要重新维护跳表的  
-          for(int i=sl->level - 1; i >= 0; i--){    
-              if(sl->header->forward[i]==NULL){    
-                  sl->level--;    
-              }    
-          }    
-          return true;  
-      }  
-      else  
-          return false;  
-  }  
   
-  // 打印跳表
-  void printSL(skiplist *sl)  
-  {  
-      //从最高层开始打印  
-      nodeStructure *p,*q=NULL;  
+#include<stdio.h>  
+#include<stdlib.h>  
 
-      //从最高层开始搜  
-      int k=sl->level;  
-      for(int i=k-1; i >= 0; i--)  
-      {  
-          p=sl->header;  
-          while(q=p->forward[i])  
-          {  
-              printf("%d -> ",p->value);  
-              p=q;  
-          }  
-          printf("\n");  
-      }  
-      printf("\n");  
-  }  
+#define MAX_LEVEL 10 //最大层数  
+
+//节点  
+typedef  struct nodeStructure
+{
+    int key;
+    int value;
+    struct nodeStructure* forward[1];
+}nodeStructure;
+
+//跳表  
+typedef  struct skiplist
+{
+    int level;
+    nodeStructure* header;
+}skiplist;
+
+//创建节点  
+nodeStructure* createNode(int level, int key, int value)
+{
+    nodeStructure* ns = (nodeStructure*)malloc(sizeof(nodeStructure) + level * sizeof(nodeStructure*));
+    ns->key = key;
+    ns->value = value;
+    return ns;
+}
+
+//初始化跳表  
+skiplist* createSkiplist()
+{
+    skiplist* sl = (skiplist*)malloc(sizeof(skiplist));
+    sl->level = 0;
+    sl->header = createNode(MAX_LEVEL - 1, 0, 0);
+    for (int i = 0; i < MAX_LEVEL; i++)
+    {
+        sl->header->forward[i] = NULL;
+    }
+    return sl;
+}
+
+//随机产生层数  
+int randomLevel()
+{
+    int k = 1;
+    while (rand() % 2)
+        k++;
+    k = (k < MAX_LEVEL) ? k : MAX_LEVEL;
+    return k;
+}
+
+//插入节点  
+bool insert(skiplist* sl, int key, int value)
+{
+    nodeStructure* update[MAX_LEVEL];
+    nodeStructure* p, * q = NULL;
+    p = sl->header;
+    int k = sl->level;
+    //从最高层往下查找需要插入的位置  
+    //填充update  
+    for (int i = k - 1; i >= 0; i--) {
+        while ((q = p->forward[i]) && (q->key < key))
+        {
+            p = q;
+        }
+        update[i] = p;
+    }
+    //不能插入相同的key  
+    if (q && q->key == key)
+    {
+        return false;
+    }
+
+    //产生一个随机层数K  
+    //新建一个待插入节点q  
+    //一层一层插入  
+    k = randomLevel();
+    //更新跳表的level  
+    if (k > (sl->level))
+    {
+        for (int i = sl->level; i < k; i++) {
+            update[i] = sl->header;
+        }
+        sl->level = k;
+    }
+
+    q = createNode(k-1, key, value);// 节点组成中自带一个size为1的结点指针数组
+    //逐层更新节点的指针，和普通列表插入一样  
+    for (int i = 0; i < k; i++)
+    {
+        q->forward[i] = update[i]->forward[i];
+        update[i]->forward[i] = q;
+    }
+    return true;
+}
+
+//搜索指定key的value  
+int search(skiplist* sl, int key)
+{
+    nodeStructure* p, * q = NULL;
+    p = sl->header;
+    //从最高层开始搜  
+    int k = sl->level;
+    for (int i = k - 1; i >= 0; i--) {
+        while ((q = p->forward[i]) && (q->key <= key))
+        {
+            if (q->key == key)
+            {
+                return q->value;
+            }
+            p = q;
+        }
+    }
+    return NULL;
+}
+
+//删除指定的key  
+bool deleteSL(skiplist* sl, int key)
+{
+    nodeStructure* update[MAX_LEVEL];
+    nodeStructure* p, * q = NULL;
+    p = sl->header;
+    //从最高层开始搜  
+    int k = sl->level;
+    for (int i = k - 1; i >= 0; i--) {
+        while ((q = p->forward[i]) && (q->key < key))
+        {
+            p = q;
+        }
+        update[i] = p;
+    }
+    if (q && q->key == key)
+    {
+        //逐层删除，和普通列表删除一样  
+        for (int i = 0; i < sl->level; i++) {
+            if (update[i]->forward[i] == q) {
+                update[i]->forward[i] = q->forward[i];
+            }
+        }
+        free(q);
+        //如果删除的是最大层的节点，那么需要重新维护跳表的  
+        for (int i = sl->level - 1; i >= 0; i--) {
+            if (sl->header->forward[i] == NULL) {
+                sl->level--;
+            }
+        }
+        return true;
+    }
+    else
+        return false;
+}
+
+// 打印跳表
+void printSL(skiplist* sl)
+{
+    //从最高层开始打印  
+    nodeStructure* p, * q = NULL;
+
+    //从最高层开始搜  
+    int k = sl->level;
+    for (int i = k - 1; i >= 0; i--)
+    {
+        p = sl->header;
+        while (q = p->forward[i])
+        {
+            printf("%d -> ", p->value);
+            p = q;
+        }
+        printf("%d -> NULL", p->value);
+        printf("\n");
+    }
+    printf("\n");
+}
+// 打印跳表
+void printCuteSL(skiplist* sl)
+{
+    //从最低层开始打印  
+    nodeStructure* p, * q = NULL;
+
+    //从最低层开始搜  
+    int k = sl->level;
+    for (int i = 0; i < k; i++)
+    {
+        p = sl->header;
+        int ArrowNum = 0;
+        int lastOutputPos = 0;
+        nodeStructure* belowLevelHeader = sl->header;
+
+        while (p) // 当前元素存在
+        {
+            q = p->forward[i]; // 取下一个元素存为q 
+            if (i > 0) {
+                // 找到第一层中相同的值，才打印值，未找到前打印箭头
+                while (p->key != belowLevelHeader->key) {
+                    ArrowNum++;
+                    belowLevelHeader = belowLevelHeader->forward[0];
+                }
+
+                // 打印ArrowNum个箭头
+                for (int j = 0; j < ArrowNum-1-lastOutputPos; j++) // 输出时自带了一个\t 
+                    printf("\t");
+                lastOutputPos=ArrowNum;
+                ArrowNum = 0;
+                belowLevelHeader = sl->header;
+
+                printf("%d\t", p->value);
+                p = q;
+            }
+            else {
+                // 打印最低层
+                printf("%d\t", p->value);
+                p = q;
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+ 
   
   // 测试跳表
   int main()  
   {  
-      skiplist *sl=createSkiplist();  
-      for(int i=1;i<=19;i++)  
-      {  
-          insert(sl,i,i*2);  
-      }  
-      printSL(sl);  
-      //搜索  
-      int i=search(sl,4);  
-      printf("i=%d\n",i);  
-      //删除  
-      bool b=deleteSL(sl,4);  
-      if(b)  
-          printf("删除成功\n");  
-      printSL(sl);  
-      system("pause");  
-      return 0;  
+      skiplist* sl = createSkiplist();
+    for (int i = 1; i <= 15; i++)
+    {
+        insert(sl, i, i * 2 + 1);
+        //printSL(sl);
+    }
+    printCuteSL(sl);
+    //搜索  
+    int i = search(sl, 8);
+    printf("i=%d\n", i);
+    //删除  
+    bool b = deleteSL(sl, 8);
+    if (b)
+        printf("删除成功\n");
+
+    printCuteSL(sl);
+    system("pause");
+    return 0;  
   }  
   
   
