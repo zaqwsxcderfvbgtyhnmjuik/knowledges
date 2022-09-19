@@ -1,11 +1,13 @@
 /// this is a topic about event ///
 
 // 来源
-  
+    
 // 原理
-
+    操作系统内部使用引用计数维护Event对象；并与其他内核对象处于同一命名空间。
+    
 // 作用
-
+    实现线程、进程间同步等
+    
 // 使用注意事项
 
 
@@ -108,5 +110,137 @@
     return true;
     }
   #endif
+  
+  // 附录
+  // windows API documents
+  // number one
+    //function
+        Creates or opens a named or unnamed event object.
+    //declaration
+        HANDLE CreateEvent( // If the function succeeds, the return value is a handle to the event object. ————If the named event object existed before the function call, the function returns a handle to the existing object and GetLastError returns ERROR_ALREADY_EXISTS.————If the function fails, the return value is NULL. To get extended error information, call GetLastError.
+        
+        [in, optional] LPSECURITY_ATTRIBUTES lpEventAttributes,   // A pointer to a SECURITY_ATTRIBUTES structure. If this parameter is NULL, the handle cannot be inherited by child processes. ————The lpSecurityDescriptor member of the structure specifies a security descriptor for the new event. If lpEventAttributes is NULL, the event gets a default security descriptor. The ACLs in the default security descriptor for an event come from the primary or impersonation token of the creator.
+        
+        [in]           BOOL                  bManualReset,        // If this parameter is TRUE, the function creates a manual-reset event object, which requires the use of the ResetEvent function to set the event state to nonsignaled. ————If this parameter is FALSE, the function creates an auto-reset event object, and system automatically resets the event state to nonsignaled after a single waiting thread has been released.
+        
+        [in]           BOOL                  bInitialState,       // If this parameter is TRUE, the initial state of the event object is signaled; otherwise, it is nonsignaled.
+        
+        [in, optional] LPCSTR                lpName               // The name of the event object. The name is limited to MAX_PATH characters. Name comparison is case sensitive. ————If lpName is NULL, the event object is created without a name. ————If lpName matches the name of an existing named event object, this function requests the EVENT_ALL_ACCESS access right. In this case, the bManualReset and bInitialState parameters are ignored because they have already been set by the creating process. If the lpEventAttributes parameter is not NULL, it determines whether the handle can be inherited, but its security-descriptor member is ignored.————If lpName matches the name of another kind of object in the same namespace (such as an existing semaphore, mutex, waitable timer, job, or file-mapping object), the function fails and the GetLastError function returns ERROR_INVALID_HANDLE. This occurs because these objects share the same namespace.
+        );
+    //remark
+        The handle returned by CreateEvent has the EVENT_ALL_ACCESS access right; it can be used in any function that requires a handle to an event object, provided that the caller has been granted access. If an event is created from a service or a thread that is impersonating a different user, you can either apply a security descriptor to the event when you create it, or change the default security descriptor for the creating process by changing its default DACL. For more information, see Synchronization Object Security and Access Rights.
+        Any thread of the calling process can specify the event-object handle in a call to one of the wait functions. The single-object wait functions return when the state of the specified object is signaled. The multiple-object wait functions can be instructed to return either when any one or when all of the specified objects are signaled. When a wait function returns, the waiting thread is released to continue its execution.
+        The initial state of the event object is specified by the bInitialState parameter. Use the SetEvent function to set the state of an event object to signaled. Use the ResetEvent function to reset the state of an event object to nonsignaled.
+        When the state of a manual-reset event object is signaled, it remains signaled until it is explicitly reset to nonsignaled by the ResetEvent function. Any number of waiting threads, or threads that subsequently begin wait operations for the specified event object, can be released while the object's state is signaled.
+        When the state of an auto-reset event object is signaled, it remains signaled until a single waiting thread is released; the system then automatically resets the state to nonsignaled. If no threads are waiting, the event object's state remains signaled.
+        Multiple processes can have handles of the same event object, enabling use of the object for interprocess synchronization. The following object-sharing mechanisms(机制) are available:
+            A child process created by the CreateProcess function can inherit a handle to an event object if the lpEventAttributes parameter of CreateEvent enabled inheritance.
+            A process can specify the event-object handle in a call to the DuplicateHandle function to create a duplicate handle that can be used by another process.
+            A process can specify the name of an event object in a call to the OpenEvent or CreateEvent function.
+        Use the CloseHandle function to close the handle. The system closes the handle automatically when the process terminates. The event object is destroyed when its last handle has been closed.
+  
+  // number two
+    //function
+        Closes an open object handle.
+    //declaration
+      BOOL CloseHandle( // If the function succeeds, the return value is nonzero.————If the function fails, the return value is zero. To get extended error information, call GetLastError.————If the application is running under a debugger, the function will throw an exception if it receives either a handle value that is not valid or a pseudo-handle value.————This can happen if you close a handle twice, or if you call CloseHandle on a handle returned by the FindFirstFile function instead of calling the FindClose function.
+          
+          [in] HANDLE hObject // A valid handle to an open object.
+          );
+    //remark
+        The CloseHandle function closes handles to the following objects:
+          Access token
+          Communications device
+          Console input
+          Console screen buffer
+          Event
+          File
+          File mapping
+          I/O completion port
+          Job
+          Mailslot
+          Memory resource notification
+          Mutex
+          Named pipe
+          Pipe
+          Process
+          Semaphore
+          Thread
+          Transaction
+          Waitable timer
+        The documentation for the functions that create these objects indicates that CloseHandle should be used when you are finished with the object, and what happens to pending operations on the object after the handle is closed. In general, CloseHandle invalidates the specified object handle, decrements the object's handle count, and performs object retention checks. After the last handle to an object is closed, the object is removed from the system. For a summary of the creator functions for these objects, see Kernel Objects.
+        Generally, an application should call CloseHandle once for each handle it opens. It is usually not necessary to call CloseHandle if a function that uses a handle fails with ERROR_INVALID_HANDLE, because this error usually indicates that the handle is already invalidated. However, some functions use ERROR_INVALID_HANDLE to indicate that the object itself is no longer valid. For example, a function that attempts to use a handle to a file on a network might fail with ERROR_INVALID_HANDLE if the network connection is severed, because the file object is no longer available. In this case, the application should close the handle.
+        If a handle is transacted, all handles bound to a transaction should be closed before the transaction is committed. If a transacted handle was opened by calling CreateFileTransacted with the FILE_FLAG_DELETE_ON_CLOSE flag, the file is not deleted until the application closes the handle and calls CommitTransaction. For more information about transacted objects, see Working With Transactions.
+        Closing a thread handle does not terminate the associated thread or remove the thread object. Closing a process handle does not terminate the associated process or remove the process object. To remove a thread object, you must terminate the thread, then close all handles to the thread. For more information, see Terminating a Thread. To remove a process object, you must terminate the process, then close all handles to the process. For more information, see Terminating a Process.
+        Closing a handle to a file mapping can succeed even when there are file views that are still open. For more information, see Closing a File Mapping Object.
+        Do not use the CloseHandle function to close a socket. Instead, use the closesocket function, which releases all resources associated with the socket including the handle to the socket object. For more information, see Socket Closure.
+        Do not use the CloseHandle function to close a handle to an open registry key. Instead, use the RegCloseKey function. CloseHandle does not close the handle to the registry key, but does not return an error to indicate this failure.
+  
+  // number three
+    //function
+        Waits until the specified object is in the signaled state or the time-out interval elapses(流逝).
+    //declaration
+        DWORD WaitForSingleObject(      // If the function succeeds, the return value indicates the event that caused the function to return. It can be one of the following values：
+            WAIT_ABANDONED: The specified object is a mutex object that was not released by the thread that owned the mutex object before the owning thread terminated. Ownership of the mutex object is granted to the calling thread and the mutex state is set to nonsignaled.If the mutex was protecting persistent state information, you should check it for consistency.
+            WAIT_OBJECT_0:  The state of the specified object is signaled.
+            WAIT_TIMEOUT:   The time-out interval elapsed, and the object's state is nonsignaled.
+            WAIT_FAILED:    The function has failed. To get extended error information, call GetLastError.
+        
+        [in] HANDLE hHandle,            // A handle to the object. For a list of the object types whose handles can be specified, see the following Remarks section.————If this handle is closed while the wait is still pending, the function's behavior is undefined.√√√————The handle must have the SYNCHRONIZE access right. For more information, see Standard Access Rights.
+        
+        [in] DWORD  dwMilliseconds      // The time-out interval, in milliseconds. If a nonzero value is specified, the function waits until the object is signaled or the interval elapses. ————If dwMilliseconds is zero, the function does not enter a wait state if the object is not signaled√√√; it always returns immediately. ————If dwMilliseconds is INFINITE, the function will return only when the object is signaled.————Windows XP, Windows Server 2003, Windows Vista, Windows 7, Windows Server 2008 and Windows Server 2008 R2:  The dwMilliseconds value does include time spent in low-power states. For example, the timeout does keep counting down while the computer is asleep.————Windows 8, Windows Server 2012, Windows 8.1, Windows Server 2012 R2, Windows 10 and Windows Server 2016:  The dwMilliseconds value does not include time spent in low-power states. For example, the timeout does not keep counting down while the computer is asleep.
+        
+        );
+    //remark
+       The WaitForSingleObject function checks the current state of the specified object. If the object's state is nonsignaled, the calling thread enters the wait state until the object is signaled or the time-out interval elapses.
+       The function modifies the state of some types of synchronization objects. Modification occurs only for the object whose signaled state caused the function to return. For example, the count of a semaphore object is decreased by one.
+       The WaitForSingleObject function can wait for the following objects:
+            Change notification
+            Console input
+            Event
+            Memory resource notification
+            Mutex
+            Process
+            Semaphore
+            Thread
+            Waitable timer
+       Use caution when calling the wait functions and code that directly or indirectly creates windows. If a thread creates any windows, it must process messages. Message broadcasts are sent to all windows in the system. A thread that uses a wait function with no time-out interval may cause the system to become deadlocked. Two examples of code that indirectly creates windows are DDE and the CoInitialize function. Therefore, if you have a thread that creates windows, use MsgWaitForMultipleObjects or MsgWaitForMultipleObjectsEx, rather than WaitForSingleObject.
+       补充:dwMilliseconds
+         If hHandle is invalid or closed and so on, whatever the value of dwMilliseconds，return WAIT_FAILED immediately
+         If dwMilliseconds is zero, and if the object is not signaled, return WAIT_TIMEOUT immediately
+         If dwMilliseconds is zero, and if the object is signaled, return WAIT_OBJECT_0 immediately
+       补充:hHandle
+         If this handle is closed while the wait is still pending, the function's behavior is undefined. such as:
+            if dwMilliseconds is 0, and handle object is not closed, return WAIT_TIMEOUT immediately; 
+            if dwMilliseconds is 0, and handle object is closed, return WAIT_FAILED immediately;
+            if dwMilliseconds is limited value, return WAIT_TIMEOUT after slapses time-out interval 
+            if dwMilliseconds is INFINITE, never return, because you can not call SetEvent(...) and so on , let handle object gets signaled, keep waiting all the time
+  // linux API documents
     
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
