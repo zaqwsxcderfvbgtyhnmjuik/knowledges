@@ -216,7 +216,15 @@
             if dwMilliseconds is limited value, return WAIT_TIMEOUT after slapses time-out interval 
             if dwMilliseconds is INFINITE, never return, because you can not call SetEvent(...) and so on , let handle object gets signaled, keep waiting all the time
   // linux API documents
-    
+    //function
+        pthread_cond_destroy, pthread_cond_init — destroy and initialize condition variables
+    //declaration
+        #include <pthread.h>
+        int pthread_cond_destroy(pthread_cond_t *cond);
+        int pthread_cond_init(pthread_cond_t *restrict cond,
+           const pthread_condattr_t *restrict attr);
+           
+        pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
   
   
   
