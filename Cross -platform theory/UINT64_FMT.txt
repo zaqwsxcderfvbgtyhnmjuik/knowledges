@@ -1,16 +1,29 @@
 /// this is a topic about printing the value of type int64_t or uint64_t via language level function printf(...) /// 
 
 // background
-  int 数据类型根据数据长度分类有int, long int, long long int
-    int
-      in win32 win64 linux32 linux64 platform all are 32 bit, the C++ stdandard is at least 32 bit
-    long
-      only in linux64 platform is 64bit, other platforms are 32bit
-      so in linux64 platform, int64_t was defined as typedef long int64_t; we have a problem, which is how to choose a correct format string while printing via printf
-        "%lu" or "%llu"
-      it's obvious that depends on platform which i choose to compile
-    long long
-      in win32 win64 linux32 linux64 platform all are 64 bit, the C++ stdandard is at least 64 bit
+    (1) int 数据类型根据数据长度分类有int, long int, long long int
+      int
+        in win32 win64 linux32 linux64 platform all are 32 bit, the C++ stdandard is at least 32 bit
+      long
+        only in linux64 platform is 64bit, other platforms are 32bit
+        so in linux64 platform, int64_t was defined as typedef long int64_t; we have a problem, which is how to choose a correct format string while printing via printf
+          "%lu" or "%llu"
+        it's obvious that depends on platform which i choose to compile
+      long long
+        in win32 win64 linux32 linux64 platform all are 64 bit, the C++ stdandard is at least 64 bit
+    (2)三组编译器预定义宏定义：都是编译器预定义的宏(编译器内部的，无法转到定义查看)，根据功能不同，分成以下三类：
+        指明编译器宏：指明编译类型及版本
+          GNU编译器 <==> __GNUC__ <==> 如果__GNUC__宏被定义了，则使用的是GCC或G++编译器
+          Microsoft <==> _MSC_VER <==> 如果_MSC_VER宏被定义了，则使用的是MSVC编译器
+        指明硬件平台宏：指明硬件平台(不是所有的编译器都预定义了该些宏)
+          x86 <==> _M_IX86、__INTEL__、__i386__ <==> 如果__i386__等宏被定义了，则使用的是32位的硬件平台
+          x86-64 <==> _M_X64、__amd64、__x86_x64__ <==> 如果__x86_x64__等宏被定义了，则使用的是64位的硬件平台
+        指明操作系统宏：指明操作系统版本(不是所有的编译器都预定义了该些宏)
+          windows32 <==> _WIN32、__WINDOWS__ <==> 如果只有_WIN32等宏被定义了，则使用的是win32操作系统
+          windows64 <==> _WIN32、_WIN64 <==> 如果_WIN64等宏被定义了，则使用的是win64操作系统
+          linux32 <==> __unix__、__linux__ <==> 如果只有___linux__等宏被定义了，则使用的是linux32操作系统
+          linux64 <==> __unix__、__linux__、__LP64__、__amd64 <==> 如果_amd64或__LP64__宏被定义了，则使用的是linux64操作系统
+      
 // 解决方法
     _WIN32, _WIN64
       win32 and win64 platform commonly have the definition of macro _WIN32
@@ -21,8 +34,14 @@
   
     note:
       _WIN32, _WIN64是由编译器内部自己定义的，不是某个系统文件中定义(如WIN32在windows.h中定义)，也不是程序员自己定义的，直接用即可。
-  
-// code implementation
+    
+    __linux__, __LP64__
+      对应同_WIN32, _WIN64
+      略
+      note:
+      __linux__, __LP64__是由编译器内部自己定义的，不是某个系统文件中定义(如WIN32在windows.h中定义)，也不是程序员自己定义的，直接用即可。
+
+// code implementation:使用编译器预定义硬件指示宏定义__i386__和_x86_64__来实现也可以
     #ifdef _WIN32 //windows
     // Common macro definitions for _WIN32 and _WIN64 platforms 
     // UINT64_FMT
