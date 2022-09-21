@@ -1,0 +1,86 @@
+/// this is a topic about printing the value of type int64_t or uint64_t via language level function printf(...) /// 
+
+// background
+  int 数据类型根据数据长度分类有int, long int, long long int
+    int
+      in win32 win64 linux32 linux64 platform all are 32 bit, the C++ stdandard is at least 32 bit
+    long
+      only in linux64 platform is 64bit, other platforms are 32bit
+      so in linux64 platform, int64_t was defined as typedef long int64_t; we have a problem, which is how to choose a correct format string while printing via printf
+        "%lu" or "%llu"
+      it's obvious that depends on platform which i choose to compile
+    long long
+      in win32 win64 linux32 linux64 platform all are 64 bit, the C++ stdandard is at least 64 bit
+// 解决方法
+    _WIN32, _WIN64
+      win32 and win64 platform commonly have the definition of macro _WIN32
+      We distinguish win64 -bit platforms through macro _WIN64
+    
+      _WIN32：Defined for applications for Win32 and Win64. Always defined.
+　　  _WIN64：Defined for applications for Win64.
+  
+    note:
+      _WIN32, _WIN64是由编译器内部自己定义的，不是某个系统文件中定义(如WIN32在windows.h中定义)，也不是程序员自己定义的，直接用即可。
+  
+// code implementation
+    #ifdef _WIN32 //windows
+    // Common macro definitions for _WIN32 and _WIN64 platforms 
+    // UINT64_FMT
+    #ifndef PRIu64
+    #define PRIu64 "llu"
+    #endif 
+
+    #ifndef PRIi64
+    #define PRIi64 "lld"
+    #endif
+
+    #define UINT64_FMT "%" PRIu64
+    #define INT64_FMT "%" PRIi64
+
+    #ifdef _WIN64 //x64
+    typedef uint64_t WordID_t;
+    typedef uint64_t DocID_t;
+
+    #else //x86
+    typedef uint32_t WordID_t;
+    typedef uint32_t DocID_t;
+    #endif
+
+    #else //unix
+
+    #ifdef __x86_64__ //x64
+    typedef unsigned long long WordID_t;
+    typedef unsigned long long DocID_t;
+
+    // UINT64_FMT
+    // sizeof( long ) == 8 bytes only in linux 64bit platform
+    // so uint64_t definition：typedef unsigned long uint64_t 
+    #ifndef PRIu64
+    #define PRIu64 "lu"
+    #endif 
+
+    #ifndef PRIi64
+    #define PRIi64 "ld"
+    #endif
+
+    #define UINT64_FMT "%" PRIu64
+    #define INT64_FMT "%" PRIi64
+
+
+    #elif __i386__ //x86
+    typedef unsigned int WordID_t;
+    typedef unsigned int DocID_t;
+
+    // UINT64_FMT
+    #ifndef PRIu64
+    #define PRIu64 "llu"
+    #endif 
+
+    #ifndef PRIi64
+    #define PRIi64 "lld"
+    #endif
+
+    #define UINT64_FMT "%" PRIu64
+    #define INT64_FMT "%" PRIi64
+    #endif
+    #endif
