@@ -68,8 +68,8 @@
     #else //unix
 
     #ifdef __x86_64__ //x64
-    typedef unsigned long long WordID_t;
-    typedef unsigned long long DocID_t;
+    typedef unsigned long WordID_t;
+    typedef unsigned long DocID_t;
 
     // UINT64_FMT
     // sizeof( long ) == 8 bytes only in linux 64bit platform
