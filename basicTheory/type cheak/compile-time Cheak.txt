@@ -1,11 +1,8 @@
-/// this is a topic about compile-time cheak ///
+/// this is a topic about compile-time cheak of type cheak ///
 
 // type cheak,类型检查
     定义：指验证操作接收的是否为合适的类型数据以及赋值是否合乎类型要求。
-
-// 空指针检查
-    static_assert(m_pBuffer);// 检查指针是否为空，为空则进行报错
-
+    
 // 类型长度检查
     a.指针长度检查：
       static_assert(sizeof(void *) == 4, "64-bit code generation is not supported.");//该static_assert用来确保编译仅在32位的平台上进行，不支持64位的平台，该语句可以放在文件的开头处，这样可以尽早检查，以节省失败情况下的编译时间。
@@ -16,6 +13,6 @@
       STATIC_ASSERT(1, int);
       STATIC_SIZE_ASSERT(long, 8);
       
-// 逻辑检查
-    static_assert(nBegin<=nEnd, "下标逻辑出错！");
+
+
     
