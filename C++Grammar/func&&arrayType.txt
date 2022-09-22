@@ -1,0 +1,29 @@
+/// this is a topic about function type and array type wtih their pointer type ///
+
+// 理论
+    // 一切皆对象，函数，int，struct Empty{};等
+
+// 数组
+    // 数组对象
+        int int5[5]={0, 0, 0, 0, 0};
+    // 数组类型
+        typedef int int5[5]; // int5是数组类型
+        int5 myarray = {0, 0, 0, 0, 0}; // int5数组对象
+    
+    // 数组类型指针对象
+        int (*pint5)[5] = nullptr;
+       
+    //  数组类型指针类型
+        typedef int (*pint5)[5];
+
+//函数
+    // 函数对象
+        int Add(int,int){return 8;};
+    // 函数类型
+        typedef int Add(int,int);       
+    
+    // 函数类型指针对象
+        int (*pAdd)(int,int) = nullptr;  
+       
+    //  函数类型指针类型
+        typedef int (*pAdd)(int,int); 
