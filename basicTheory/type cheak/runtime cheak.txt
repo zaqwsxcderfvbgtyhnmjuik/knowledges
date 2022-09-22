@@ -2,3 +2,10 @@
 
 // type cheak,类型检查
     定义：类型检查指验证操作接收的是否为合适的类型数据以及赋值是否合乎类型要求。   
+
+// 逻辑检查
+    assert ( nBegin<=nEnd, "下标逻辑出错！" );
+    assert ( !m_bInitialized );
+    
+// 空指针检查
+    assert( m_pBuffer );// 检查指针是否为空，为空则进行报错
