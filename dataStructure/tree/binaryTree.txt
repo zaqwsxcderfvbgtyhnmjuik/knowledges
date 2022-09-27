@@ -1,0 +1,5 @@
+/// this is a topic about binary tree ///
+
+// 背景
+	为何研究二叉树，不研究其他树，是否失去一般性？
+		
