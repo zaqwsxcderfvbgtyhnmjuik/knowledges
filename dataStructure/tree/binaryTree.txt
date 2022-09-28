@@ -92,6 +92,193 @@
                 即
                 k=⌊(孩子下标-1)/2⌋
                     
- 
+ // 二叉树存储结构：结点定义
+        顺序存储结构
+            实现：按满二叉树的结点层次从上到下从左到右从0开始递增1编号，依次按照编号从小到大从数组下标为0处逐个存放二叉树中的数据元素；
+                亲子位次关系，参照性质5
+            表示：
+                #define MAXSIZE 100
+                typedef elemType SqBiTree[MAXSIZE]; //binary tree
+                SqBiTree bt;
+            分析：
+                数组长度固定，对于二叉树元素数量变化较大的情形不适合，适合数量较为稳定的二叉树。（浪费空间）
+                数组长度固定，对于稀疏二叉树不适合，适合完全或满二叉树。（浪费空间）
+                
+        链式存储结构
+            二叉链表：
+                实现：将一对多的关系进行从前往后地串起来。
+                表示：
+                    typedef struct BiNode {
+                        elemType data;
+                        struct BiNode *lchild, *rchild;// 左右孩子指针
+                    }BiNode, *BiTree;
+            
+                分析：
+                    一对多的关系从前往后串起来，适合遍历寻找孩子节点情形；
+                    在n个结点的二叉链表中，有n+1个空指针区域；
+                    证明：
+                        n个结点，每个结点两个指针域，则必有2n个指针域；
+                        从结点到根反向看，除根节点外，每个结点的前驱都只有一个连线指向双亲，即共有n-1个指针域被使用；
+                        未使用的指针域则是空指针域数量：2n - (n - 1)，即n+1个空指针域；
+            三叉链表：
+                实现：将一对多的关系进行从前往后、从后往前地串起来。
+                表示：
+                    typedef struct BiNode {
+                        elemType data;
+                        struct BiNode *lchild, *parent, *rchild;// 左右孩子指针
+                    }TriNode, *TriTree;// trinary tree 
+            
+                分析：
+                    一对多的关系从前往后，从后往前串起来，适合往前寻找孩子双亲节点情形；
                     
+// 二叉树遍历
+    遍历
+        定义：
+            顺着某一条搜索路径寻访二叉树中的结点，使得每个结点均被访问一次，而且仅仅被访问一次（又称周游）。
+            注意：
+                访问的含义较广，可以是对结点作各种处理，如输出，比较，修改，但要求这种访问不破坏原来的数据结构（不插入、删除结点）；
+        目的：
+            得到树中所有结点的一个线性排列。
+        用途：
+            是增删改查和排序运算的前提，是二叉树的一切运算的基础和核心。
+            前缀中缀后缀表达式分别对于先序中序后序遍历，可以进行表达式转换操作。
+            计算表达式值。
+            构建语法树。
+            排序树。
+            ...
+            依据先序中序或后序中序遍历，确定唯一一棵二叉树。
+    
+    先中后遍历    
+        方法：
+            依次遍历二叉树的三个组成部分，便是遍历整个二叉树，假设L:遍历左子树，D:遍历根节点，R:遍历右子树，则遍历的方案根据全排列可得6种：DLR,LDR,LRD,DRL,RDL,RLD，
+            规定先左后右，则只有前三种情况，见分类。
+        
+        分类：
+            DLR——先（根）序遍历
+                算法描述：
+                    若当前(子)二叉树为空，则空操作；
+                    否则：
+                        1)访问根结点
+                        2)先序遍历左子树
+                        3)先序遍历右子树
+                算法实现：
+                    void preOrderTraverse(BiTree T) {
+                        if( T==NULL ) return;
+                        visit(T);
+                        preOrderTraverse(T->lchild);
+                        preOrderTraverse(T->rchild);
+                    }
+            LDR——中（根）序遍历
+                算法描述：
+                    若当前(子)二叉树为空，则空操作；
+                    否则：
+                        1)中序遍历左子树
+                        2)访问根结点
+                        3)中序遍历右子树
+                算法实现：
+                    void midOrderTraverse(BiTree T) {
+                        if( T==NULL ) return;
+                        midOrderTraverse(T->lchild);
+                        visit(T);
+                        midOrderTraverse(T->rchild);
+                    }
+            LRD——后（根）序遍历
+                算法描述：
+                    若当前(子)二叉树为空，则空操作；
+                    否则：
+                        1)后序遍历左子树
+                        2)后序遍历右子树
+                        3)访问根结点
+                算法实现：
+                    void postOrderTraverse(BiTree T) {
+                        if( T==NULL ) return;
+                        postOrderTraverse(T->lchild);
+                        postOrderTraverse(T->rchild);
+                        visit(T);
+                    }
+        分析：
+            如果去掉visit(T)语句，从递归的角度看，三种算法是完全相同的，或者说这三种算法的访问路径是相同的，只是访问结点的时机不同；
+            从虚线的出发点到终点的路径上，每个结点经过三次,即执行线与每个结点共同在同一个作用域下3次；（↗↘↖↙）
+                第1次经过时访问==先序遍历；不访问时，使用栈记录起该结点；
+                第2次经过时访问==中序遍历；不访问时，使用栈记录起该结点；
+                第3次经过时访问==后序遍历；不访问时，使用栈记录起该结点；
+                           A
+                      ↙↗   ↘↖
+                    ↙B↖      ↘C↖
+                   ↙↗↘↖   ↙↗↘↖
+
+            时间复杂度：O(n) <==> 每个结点访问一次，n个结点访问n次
+            空间复杂度：o(n) <==> 最坏情况下，一棵树单侧树，需要记录最多n个结点，所以是O(n)
+           
+    层次遍历：
+        定义：
+            对于一棵二叉树，从根结点开始，按从上到下、从左到右的顺序访问每一个结点；每个结点只访问一次。
+        算法描述：
+            使用一个队列；
+            将根结点进队；
+            队列不空时循环：从队列中出列一个结点P，访问它；
+                若它有左孩子结点，将左孩子结点进队；
+                若它有右孩子结点，将右孩子结点进队；
+        
+        算法实现：
+            队列使用std标准库队列queue
+            void levelOrderTraverse(BiTree T) {
+                std::queue<BiTree> levelQueue;
+                levelQueue.push(T); // 将根结点进队
+                while( !levelQueue.empty ( ) ) {    // 队列不空时循环：
+                    BiTree p = levelQueue.front();  // 从队列中出列一个结点P，访问它
+                    visit(p);
+                    
+                    if (p->lchild) levelQueue.push(p->lchild);  // 有左孩子时将其入队
+                    if (p->rchild) levelQueue.push(p->rchild);  // 有右孩子时将其入队
+                    levelQueue.pop();   // 可以在front()后面紧接着就调用，pop不会调用pop出来的对象的析构函数，因此紧接着就调用也可以继续使用pop出来的p
+                }
+            }
+                
+    遍历运用
+        要求：按照先序遍历序列（空节点使用#代替，如ABC##DE#G##F###）建立二叉树的二叉链表。
+        算法实现：
+            // 主体实现
+            void createBiTree(BiTree &T) {
+                char ch = '#';
+                std::cin>>ch;
+                if (ch=='#') T = NULL;
+                else {
+                    if (T = new BiNode)
+                        exit(-1);
+                    T->data = ch;
+                    createBiTree(T->lchild); // 递归创建左子树 
+                    createBiTree(T->rchild);
+                }
+            }
+            
+            // 调用逻辑
+            BiTree root;
+            createBiTree(root);
+        
+        要求：
+        算法实现：    
+           
+           
+// 线索二叉树
+    定义：
+    
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
             
