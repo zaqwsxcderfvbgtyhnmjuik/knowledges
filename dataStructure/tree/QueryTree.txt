@@ -90,18 +90,52 @@
               b)防止重新链接后树的高度增加
               
           算法思路：
+            情况0：被删除的结点未在树中，直接删除失败
             情况1：被删除的结点是叶子结点，则直接删去该结点；
             情况2：被删除的结点只有左子树或者只有右子树，则用其左子树或右子树替换它（结点替换）
             情况3：被删除的结点既有左子树又有右子树，则
                     a)以其中序前驱值替换之（值替换），然后再删除该前驱结点（可能递归）。前驱结点是左子树中值最大的结点；
                     b)以其中序后继值替换之（值替换），然后再删除该后继结点（可能递归）。后继结点是右子树中值最小的结点；
           算法描述：
-            
+            bool EraseBST(BSTree T, KeyType key) {
+                if ( T==NULL ) // case0
+                    return false;
+                if ( key==T->data.key ) // key is found 
+                    if ( T->lchild==NULL && T->rchild==NULL ) { // case1
+                        delete T;
+                        T = NULL;
+                        return true;
+                        }
+                        
+                    if (T->lchild!=NULL && T->rchild==NULL) { // case2
+                        delete T;
+                        T = T->lchild;
+                        return true;
+                    }
+                    
+                    if (T->lchild==NULL && T->rchild!=NULL) { // case2
+                        delete T;
+                        T = T->rchild;
+                        return true;
+                    }
+                    
+                    if (T->lchild!=NULL && T->rchild!=NULL) { // case3
+                        delete T;
+                        T = T->rchild;
+                        return true;
+                    }
+                    
+                // key is still in query processing
+                if ( key < T->data.key )
+                    return EraseBST(T->lchild, key);
+                if ( key > T->data.key ) // 同算法思路保持一致
+                    return EraseBST(T->rchild, key);
+            }
           算法分析：
             情况3的删除有可能降低二叉排序树的高度，但不会增加树的高度；
           
         
-二、平衡二叉树:Binary balanced tree
+二、平衡二叉排序树:Binary balanced sort tree
 
 三、红黑树:Red black tree
 
