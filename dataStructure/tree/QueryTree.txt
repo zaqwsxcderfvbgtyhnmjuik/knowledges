@@ -164,8 +164,10 @@
                 if ( key > T->data.key ) // 同算法思路保持一致
                     return EraseBST(T->rchild, key);
             }
+          
           算法分析：
             情况3的删除有可能降低二叉排序树的高度，但不会增加树的高度；
+            BST变种颇多，此文只是一种实现，不要局限于此
           
         
 二、平衡二叉排序树:Binary balanced sort tree
