@@ -10,8 +10,10 @@
 一、二叉排序树(alias:二叉搜索树或二叉查找树):Binary sort tree
     // 定义：
         二叉排序树或是空树，或是满足如下性质的树：
-          a)若其左子树非空，则左子树上所有结点的值均 小于     根结点的值；
+          a)若其左 子树 非空，则左子树上所有结点的值均 小于     根结点的值；
+              归纳可得，等价于每个结点的左 孩子 小于 结点值；
           b)若其右子树非空，则右子树上所有结点的值均 大于等于 根结点的值；
+              归纳可得，等价于每个结点的右 孩子 大于等于 结点值；
           c)其左右子树本身又是一颗二叉排序树<==>嵌套定义
     
     // 性质
@@ -90,39 +92,70 @@
               b)防止重新链接后树的高度增加
               
           算法思路：
-            情况0：被删除的结点未在树中，直接删除失败
-            情况1：被删除的结点是叶子结点，则直接删去该结点；
-            情况2：被删除的结点只有左子树或者只有右子树，则用其左子树或右子树替换它（结点替换）
-            情况3：被删除的结点既有左子树又有右子树，则
-                    a)以其中序前驱值替换之（值替换），然后再删除该前驱结点（可能递归）。前驱结点是左子树中值最大的结点；
-                    b)以其中序后继值替换之（值替换），然后再删除该后继结点（可能递归）。后继结点是右子树中值最小的结点；
+            情况0：被删除的结点DelNode未在树中，直接删除失败
+            情况1：被删除的结点DelNode是叶子结点，则直接删去该结点；
+            情况2：被删除的结点DelNode只有左子树或者只有右子树，则用其左子树或右子树替换它（结点替换）
+            情况3：被删除的结点DelNode既有左子树又有右子树，则
+                    a)以DelNode中序前驱结点值交换(值互换)，然后再删除该前驱结点(删除的情景是不可能为情况3，于是情况3不可能递归)。前驱结点是左子树中值最大的结点；
+                        DelNode的前驱结点查找：前驱结点是左子树中值最大的结点，即从左子树根节点出发，一直找到最右侧结点，就是左子树中值最大结点；
+                          参考后继结点。
+                        DelNode的前驱结点删除：
+                          参考后继结点。
+                    b)以DelNode中序后继结点值交换(值互换)，然后再删除该后继结点(删除的情景是不可能为情况3，于是情况3不可能递归)。后继结点是右子树中值最小的结点；
+                        DelNode的后继结点查找：
+                          后继结点是右子树中值最小的结点，刚开始处，subsequentNode是DelNode->rchild，subsequentNodeParent是DelNode，接着subsequentNode一直找到最左侧结点，并记录subsequentNodeParent，就得到右子树中值最小结点，即DelNode后继结点；
+                        DelNode的后继结点删除：
+                          若subsequentNodeParent==DelNode，则subsequentNodeParent->rchild = subsequentNode->rchild，否则subsequentNodeParent->lchild = subsequentNode->rchild。接着释放DelNode后继结点subsequentNode即可。
+              
           算法描述：
-            bool EraseBST(BSTree T, KeyType key) {
+            bool EraseBST(BSTree& T, KeyType key) { // 传入的指针是引用是关键，删除叶子结点等时，可以对应将父节点相应的孩子指针置为空
                 if ( T==NULL ) // case0
                     return false;
-                if ( key==T->data.key ) // key is found 
+                    
+                if ( key==T->data.key ) {// key is found 
                     if ( T->lchild==NULL && T->rchild==NULL ) { // case1
                         delete T;
                         T = NULL;
                         return true;
                         }
-                        
+
                     if (T->lchild!=NULL && T->rchild==NULL) { // case2
-                        delete T;
+                        BSTree Nodedrop = T;                        
                         T = T->lchild;
+                        delete Nodedrop; Nodedrop = NULL;
                         return true;
-                    }
-                    
+                        }
+
                     if (T->lchild==NULL && T->rchild!=NULL) { // case2
-                        delete T;
+                        BSTree Nodedrop = T;
                         T = T->rchild;
+                        delete Nodedrop; Nodedrop = NULL;
                         return true;
-                    }
-                    
+                        }
+
                     if (T->lchild!=NULL && T->rchild!=NULL) { // case3
-                        delete T;
-                        T = T->rchild;
+                        // look the subsequent node(后继结点) in middle order and its parent                                                
+                        BSTree subsequentNode = T->rchild; ///< subsequent at the beginning 
+                        BSTree subsequentNodePareant = T;
+                        
+                        while ( subsequentNode&&subsequentNode->lchild ) {
+                            subsequentNodePareant = subsequentNode;
+                            subsequentNode = subsequentNode->lchild;
+                            }
+
+                        // swap rightSubTreeLeftestNode->data and T->data
+                        ElemType temp = T->data;
+                        T->data = subsequentNode->data;
+                        subsequentNode->data = temp;
+
+                        // delete rightSubTreeLeftestNode with case2 or case1
+                        ( subsequentNodePareant==T ? subsequentNodePareant->rchild : subsequentNodePareant->lchild) = subsequentNode->rchild ;
+                        
+                        delete subsequentNode;
+                        subsequentNode = NULL;
+
                         return true;
+                        }
                     }
                     
                 // key is still in query processing
