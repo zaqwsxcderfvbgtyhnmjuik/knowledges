@@ -87,5 +87,28 @@
     n.语料库
       a collection of written texts, especially the entire works of a particular author or a body of writing on a particular subject./书面文本的集合，尤其是特定作者的全部作品或关于特定主题的著作。
       the Darwinian corpus/达尔文语料库。
+      
+  prefix
+    n.前缀
+  
+  infix
+    n.中缀
+    
+  suffix/postfix
+    n.后缀
+    
+  unary
+    n.一元
+      unary operator/function
+  
+  binary
+    n.二元
+      binary tree/operator
+      
+  ternary
+    n.三元
+      ternary operator
+      
+    
 
 
