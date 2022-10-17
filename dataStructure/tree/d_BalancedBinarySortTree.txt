@@ -3,7 +3,17 @@
     背景：
         问题：二叉排序树最坏情况下的ASL是(n+1)2,退化到同线性表线性查找一个级别；这是一个有待解决的客观问题。
         解决方法：做"平衡化"处理，即尽量让二叉树的形态平衡。
-    
+        关系图：
+        CBT ⊂ BBST ⊂ BST
+            CBT:complete binary tree
+            BBST:balanced binary search tree 
+            BST:binary search tree
+        | |  |CBT | | |
+        | |  |__ _| | |
+        | |  BBST   | |
+        | |__ __ __ | |
+        |     BST     |
+        |__ __ __ __ _| 
     定义：
         又称为AVL tree(Adelson-Velskii and Landis)，两位俄国科学家的名字简称。
         一颗平衡二叉树或者是空树，或者是具有下列性质的二叉排序树（binary sort tree）:
