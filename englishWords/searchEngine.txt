@@ -108,7 +108,18 @@
   ternary
     n.三元
       ternary operator
-      
-    
+
+  flip endianness
+    n.翻转字节顺序
+    如：
+    0x12 34 56 78 big endianness
+    ⇩
+    0x56 78 12 34 Intermediate state
+    ⇩
+    0x78 56 34 12 small endianness
+    ⇩
+    0x56 78 12 34 Intermediate state
+    ⇩
+    0x12 34 56 78 big endianness
 
 
