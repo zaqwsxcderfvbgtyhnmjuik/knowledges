@@ -57,9 +57,64 @@
         回到上例，若取m=256，则每次查找只需log256(10^9)=4次 I/O
     
     B树定义
-        m阶B树，即m路平衡搜索树（m>=2）
-        叶子节点的深度同一相等
-        外部节点的深度同一相等
-        树高h = 外部节点的深度
+        深度统一 ：
+            m阶B树，即m路平衡搜索树（m>=2）
+            叶子节点 的深度同一相等
+            外部节点 的深度同一相等
+            树高h = 外部节点的深度
+        阶次含义：
+            内部节点各有：
+                不超过m-1个关键码: K1 < k2 < ... < kn
+                不超过m个分支:A0 < A1 < A2 < ... < An
+            内部节点的分支树n+1也不能太少，具体地：
+                树根：  2  <= n + 1 ; 即根节点至少有两个分支
+                其余：⌈m/2⌉ <= n + 1
+            故亦称作(⌈m/2⌉, m)树，
+                如(4, 8)树，(4, 7)树，(3, 6)树，(2, 4)树
+                (2, 4)树与红黑树密切联系
+    B树实现：
+        节点定义：
+            template <typename T> struct BTNode { // B树节点
+                BTNodePosi<T> parent; // 父
+                vector<T> key; // 数值向量
+                vector<BTNodePosi<T> > child; // 孩子向量（其长度总比key多1）
+                BTNode() :parent(NULL) {child.insert(0, NULL);}
+                BTNode(T e, BTNodePosi<T> lc = NULL, BTNodePosi<T> rc = NULL)  {
+                    parent = NULL; key.insert ( e ); //作为根节点只有一个关键码，以及
+                    child.insert ( lc ); if ( lc ) lc->parent = this; //左孩子
+                    child.insert ( rc ); if ( rc ) rc->parent = this; //右孩子
+                }
+        B树定义：            
+            template <typename T> class BTree { //B-树模板类
+            protected:
+               int _size; //存放的关键码总数
+               int _m; //B-树的阶次，至少为3——创建时指定，一般不能修改
+               BTNodePosi<T> _root; //根节点
+               BTNodePosi<T> _hot; //BTree::search()最后访问的非空（除非树空）的节点位置
+               void solveOverflow ( BTNodePosi<T> ); //因插入而上溢之后的分裂处理
+               void solveUnderflow ( BTNodePosi<T> ); //因删除而下溢之后的合并处理
+            public:
+               BTree ( int m = 3 ) : _m ( m ), _size ( 0 ) //构造函数：默认为最低的3阶
+               { _root = new BTNode<T>(); }
+               ~BTree() { if ( _root ) release ( _root ); } //析构函数：释放所有节点
+               int const order() { return _m; } //阶次
+               int const size() { return _size; } //规模
+               BTNodePosi<T> & root() { return _root; } //树根
+               bool empty() const { return !_root; } //判空
+               BTNodePosi<T> search ( const T& e ); //查找
+               bool insert ( const T& e ); //插入
+               bool remove ( const T& e ); //删除
+            }; //BTree
+    
+    B树操作：
+        查找：
+            B树存放的词条（包含key和value）的数量极多，以至于不便完全容纳于内存中，甚至根本不能由内存容纳；假定存储于速度更慢的外存中。
+            查找诀窍：只载入必需的节点到内存中，尽可能减少I/O操作
+            步骤：
+                从外存中磁盘IO读入B树根节点，节点内部顺序查找，查找成功返回，查找失败后，磁盘IO通过引用读取下一层的某个节点，继续查找，成功返回，直到下一个节点是外部节点，则查找以失败告终；
+            结论：失败查找必终止于外部节点。
+        插入：
+            
+                
         
             
