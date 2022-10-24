@@ -1,3 +1,71 @@
 /// this is a topic about graph ///
 
-// 1.
+分三个层次展开
+    术语(terminology)
+    实现(implementation)
+    算法(algorithm)
+
+基本术语
+    G = (V; E)
+        vertex : n = |V|
+        edge   : e = |E|
+    
+    邻接关系：adjacency
+        顶点与顶点之间的关系；任何两个顶点之间都允许存在邻接关系————即把两个顶点用线连起来形成一条边（自环情况忽略）。
+    
+    关联关系：incidence
+        顶点与与其相关的边的关系；
+        
+    无向边：undirected edge
+        若邻接顶点u和v的次序无所谓，则(u,v)为无向边；
+        
+    无向图：undigraph
+        所有边均无方向的图，即无向图。
+    
+    有向边：directed edge 
+        若邻接顶点u和v的次序需要考虑，u、v分别称作(u,v)的尾（tail）、头（head），则(u,v)为有向边；
+        
+    有向图：digraph
+        所有边均有方向的图，即有向图。
+        
+    混合图：mixed graph
+        所有边既有有向边又有无向边的图，即混合图。
+        
+    注意：
+        注意力主要集中在有向图上，原因很简单，因为通过有向图我们完全可以表示并且实现无向图以及混合图，这里的技巧是我们可以将任何的一条无向边(u,v)转换为彼此对称的一对有向边(u,v)和(v,u)。
+        因此接下来的所介绍的图的实现、图的算法都是围绕着有向图来展开的。
+        
+    路径：path
+         π  = <V0, V1, ..., Vk>
+        |π| = k
+    
+    简单路径：simple path
+        Vi = Vj 除非i==j
+        即路径中不含有重复顶点的路径。
+        
+    环路：cycle path
+        V0 = Vk
+        即路径的起点和终点是重合的顶点。
+        
+    简单环路：simple cycle path 
+        Vi = Vj 除非i==j
+        即路径中不含有重复顶点的环路。
+        
+    有向无环图：directed acyclic graph, also called DAG
+    
+    欧拉环：Eulerian cycle
+        覆盖了有向图中所有的边，即所有的有向边合在一起可以构成一个环路，这样一条经过所有的有向边，而且恰好只经过一次的环路，称之为欧拉环。
+        可知每个顶点在环路中出现了两次
+    
+    哈密尔顿环：Hamiltonian cycle
+        覆盖了有向图中所有的顶点，经过每一个顶点一次，而且恰好一次的环，称之为哈密尔顿环。
+    
+        
+表示并实现图：representation & implementation 
+    图表示方法：
+        邻接矩阵与关联矩阵：
+            adjacency matrix：
+                
+            incidence matrix：
+
+    
