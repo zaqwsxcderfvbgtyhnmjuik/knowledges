@@ -1,3 +1,94 @@
 /// this is a topib about bublle sort ///
 
-// 1.
+bubbleSort
+    问题：
+        给定n个整数，将它们按（非降）序排列
+        
+    观察：
+        ★有序/无序 序列中，任意/总有 一对相邻元素 顺序/逆序。
+        ★n个元素的无序序列至多n-1个逆序对（一对相邻元素逆序）。
+    
+    扫描交换：
+        依次比较每一对相邻元素，如有必要，交换之；
+        若整趟扫描都没有进行交换，则排序完成；否则，再做一趟扫描交换；
+    
+    代码实现：
+        void bubbleSort(int A[], int n) {
+            for (bool sorted = false; sorted = !sorted; n--) ///< 逐趟扫描交换，直至完全有序
+                for (i = 1; i < n; i++) ///< 自左至右，逐对检查A[0,n)内各相邻元素
+                    if (A[i-1] > A[i]) {///< 若逆序，则
+                        swap(A[i-1], A[i]); ///< 令其互换，同时
+                        sorted = false;     ///< 清除(全局)有序标志
+                    }
+        } ///< end bubbleSort(,) function
+        
+    起泡排序分析：
+        问题：该算法必然会结束？至少需要迭代多少趟？
+        ★不变性：经k轮扫描交换后，最大的k个元素必然就位。
+        ★单调性：经k轮扫描交换后，问题规模缩减至n-k。
+        ★正确性：经至多n趟扫描后，算法必然终止，且能给出正确解答。
+        
+    代码改进：
+        接口定义：
+        /// 优化1 <==利用观察★规律，绕过了剩余元素为有序序列的额外功比较，执行时间由原来的三角形变成了梯形
+        template <typename T> void Vector<T>::bubbleSort(Rank lo, Rank hi) { ///< [lo, hi) is going to be sorted
+            while ( !bubble ( lo, hi--) )  ; ///< here ; means a empty statement, further while loop will execute until condition is false; if like this "while ( !bubble ( lo, hi--) )", while will only execute once.
+                                             ///< 逐趟做扫描交换，直至全序
+                                             ///< 每经过这样一趟对bubble(,)的调用，都会有一个新的元素就位，于第一次而言，这个新的元素就是全局最大的那个元素就位；
+                                             ///< 接下来要考查问题的范围将会相应地缩小一个单元，我们说这也是减而治之；
+                                             ///< 再接下来，有序的部分会继续地拓展，而无序的部分会继续地缩减；整个呈现为一个不断此消无序的部分彼长有序的部分这样的一个过程；直到无序的部分只剩下一个元素，共n-1趟，排序至此完成。///< 根据不变性而得
+
+        template <typename T> bool Vector<T>::bubble(Rank lo, Rank hi) { ///< 每一趟
+            bool sorted = true;     ///< 整体有序标志
+            while (++lo < hi)   ///< 自左向右，逐一检查各对相邻元素
+                if ( _elem[lo-1] > _elem[lo] ) { ///< 若逆序，则
+                    sorted = false;                 ///< 意味着尚未整体有序，并需要
+                    swap( _elem[lo-1], _elem[lo] ); ///< 交换
+                    }
+            return sorted; ///< 返回排序标志
+            } ///< 乱序限于[0,√n)时，仍需O(n^1.5)时间————按理，O(n)应已足矣。
+            
+        /// 优化2 <==利用观察★规律，绕过了右侧已经有序的元素序列的额外功比较，执行时间由原来的三角形变成了梯形加小三角形（更新趟的结束位置而实现只是执行小三角形，若执行小三角形时，趟的结束位置又被更新，则此小三角形变成梯形，继续执行更小的三角形），假设小三角等边长为√n，则小三角形时间为O(√n*√n)==O(n)，再加上第一趟的O(n)，还是O(n)。
+        template <typename T> void Vector<T>::bubbleSort(Rank lo, Rank hi) {
+            while( lo < (hi = bubble(lo, hi)) ) ; ///< ; is key of this code statement 逐趟做扫描交换，直至全序
+        }
+        
+        template <typename T> bool Vector<T>::bubble(Rank lo, Rank hi) { ///< 每一趟
+            Rank last = lo; ///< 最右侧的逆序对初始化为[lo-1, lo]
+            while (++lo < hi)
+                if ( _elem[lo-1] > _elem[lo] ) { ///< 若逆序，则
+                    last = lo;                 ///< 更新最右侧逆序对位置记录，并需要
+                    swap( _elem[lo-1], _elem[lo] ); ///< 交换
+                    }
+            return last; ///< 返回最右侧的逆序对位置
+        } ///< 前一版本中的逻辑标志位sorted，改为秩last
+        
+    综合评价：
+        效率：最好O(n),最坏O(n^2)
+        稳定性：稳定
+            在冒泡排序中，元素a和元素b相对位置发生变化，只有一种可能：
+                经过分别与其他元素交换，二者相互 接近 直至 相邻；
+                在接下来一轮扫描交换中，二者因 逆序 而交换位置；
+            在if一句的判断条件中，若把">"换成">="，将有何变化？
+                将变成不稳定
+        
+        
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
