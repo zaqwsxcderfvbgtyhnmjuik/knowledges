@@ -1,0 +1,71 @@
+/// this is a topic about merge sort ///
+
+归并排序原理
+    分治策略：
+        序列一分为二 ///< O(1)
+        子序列递归排序 ///< 2 x T(n/2)
+        合并有序子序列 ///< O(n)
+    示例：
+            63271584        ///< 开始无序向量的递归分解，直到向量子序列有序
+          6327    1584
+         63  27  15  84     
+        6 3 2 7  1 5 8 4    ///< 开始有序向量的逐层合并
+         36  27  15  48
+          2367    1458
+            12345678        ///< 序列有序，排序完成
+    运行时间：
+        T(n) = 2T(n/2) + O(n)   ///< T(n)是整体的时间，T(n/2)是规模为n/2的时间，O(n)是合并的时间
+        求解：
+        T(n) = 2T(n/2) + n
+             = 4T(n/4) + 2n
+             = 8T(n/8) + 3n
+             = 2^k * T(n/2^k) + kn
+        取n=2^k得k=log2(n)
+        于是有：
+        T(n) = 2^log2(n) * T(1) + nlog2(n)
+             = n + nlog2(n)
+             = n * ( 1+ log2(n) )
+             = n * (log2(2) + log2(n) )
+             = n * log2(2n)
+
+归并排序实现
+    template<typename T> void Vector<T>::mergeSort(Rank lo, Rank hi) { ///< [lo, hi)
+        if ( hi - lo < 2) return ;  ///< 单元素区间自然有序，否则...
+        int mi = (lo + hi) >> 1;    ///< 以中点为界。 注：hi - lo >= 2 ==> lo< mi < hi
+        mergeSort(lo, mi);  ///< 对前半段排序
+        mergeSort(mi, hi);  ///< 对后半段排序
+        merge(lo, mi, hi);  ///< 归并有序子序列。注：传入的是三个 界桩
+        }                ^
+                         | 对齐得让人拍案叫绝！
+     
+    template <typename T> void Vector<T>::merge(Rank lo, Rank mi, Rank hi) { 
+        T *A = _elem + lo;  ///< 合并后的向量A[0, hi-lo) = _elem[lo, hi)
+        int lb = mi - lo;  T *B = new T[lb];    ///< 前子向量B[0, lb) = _elem[lo, mi)
+        for (Rank i = 0; i < lb; B[i] = A[i++]);    ///< ; is key of this code statement 复制前子向量B
+        int lc = hi - mi; T *C = _elem + mi;    ///< 后子向量C[0, lc) = _elem[mi, hi)
+        for (Rank i = 0, j = 0, k = 0; (j < lb) || (k < lc) ) { ///< B[j]和C[k]中小者转至A的末尾
+            if ( ( j < lb ) && ( lc <= k || ( B[j] <= C[k] ) ) ) A[i++] = B[j++]; ///< C[k]已无或不小
+            if ( ( k < lc ) && ( lb <= j || ( C[k] <  B[j] ) ) ) A[i++] = C[k++]; ///< B[j]已无或更大
+        }///< 该循环实现紧凑；但效率而言，不如拆分处理
+        delete [] B; ///< 释放临时空间B
+        }
+    图示：
+             lo                     C [       k           )+∞
+  _elem:...  A[             i         mi                  ) ...
+             B[  j                    )+∞                 hi
+             
+             
+二路归并正确性：
+    略
+
+二路归并复杂度：
+    算法的运行时间主要消耗于for循环，共有两个控制变量
+        初始：j = 0, k = 0
+        最终：j = lb,k = lc
+        亦即：j + k = lb + lc = hi - lo = n
+    观察：每经过一次迭代，j和k中至少有一个会加一（j+k也必至少加一）
+    故知：merge()总体迭代不过O(n)次，累计只需线性时间！
+    这一结论与排序算法的O(nlogn)下界并不矛盾——毕竟这里的B和C均已各自有序
+    
+    注意：待归并子序列不必等长
+    亦即：即允许lb != lc, mi = (lo+hi)/2
