@@ -25,18 +25,18 @@
         T(n) = 2^log2(n) * T(1) + nlog2(n)
              = n + nlog2(n)
              = n * ( 1+ log2(n) )
-             = n * (log2(2) + log2(n) )
+             = n * ( log2(2) + log2(n) )
              = n * log2(2n)
 
 归并排序实现
     template<typename T> void Vector<T>::mergeSort(Rank lo, Rank hi) { ///< [lo, hi)
-        if ( hi - lo < 2) return ;  ///< 单元素区间自然有序，否则...
-        int mi = (lo + hi) >> 1;    ///< 以中点为界。 注：hi - lo >= 2 ==> lo< mi < hi
-        mergeSort(lo, mi);  ///< 对前半段排序
-        mergeSort(mi, hi);  ///< 对后半段排序
-        merge(lo, mi, hi);  ///< 归并有序子序列。注：传入的是三个 界桩
-        }                ^
-                         | 对齐得让人拍案叫绝！
+        if ( hi - lo < 2 ) return ;  ///< 单元素区间自然有序，否则...
+        int mi = ( lo + hi ) >> 1;    ///< 以中点为界。 注：hi - lo >= 2 ==> lo< mi < hi
+        mergeSort( lo, mi );  ///< 对前半段排序
+        mergeSort( mi, hi );  ///< 对后半段排序
+        merge( lo, mi, hi );  ///< 归并有序子序列。注：传入的是三个 界桩
+        }                  ^
+                           | 对齐得让人拍案叫绝！
      
     template <typename T> void Vector<T>::merge(Rank lo, Rank mi, Rank hi) { 
         T *A = _elem + lo;  ///< 合并后的向量A[0, hi-lo) = _elem[lo, hi)
