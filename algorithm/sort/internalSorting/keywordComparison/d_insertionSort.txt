@@ -2,7 +2,7 @@
 插入排序 <==> insertion sort 
 
 实例：减而治之
-    迭代轮次            前缀有序序列          当前元素            后缀无序元素
+    迭代轮次            前缀有序序列          当前元素            后缀无序序列
     -1                 ^                    ^                  5 2 7 4 6 3 1
     0                  ^                    5                    2 7 4 6 3 1
     1                  (5)                  2                      7 4 6 3 1
@@ -16,13 +16,26 @@
 
 实现：
     /// 对列表中起始于位置p的连续n个元素做插入排序，valid(p) && rank(p) + n <= size
-    template <typename T> void List<T>::insertionSort(Posi(T) p, int n) { ///< 对区间[p, p+n)中的元素进行插入排序
+    template <typename T> void List<T>::insertionSort(ListNodePosi<T> p, int n) { ///< 对区间[p, p+n)中的元素进行插入排序
         for (int r = 0; r < n; r++) { ///< 循环变量r是已经排序的前缀有序序列的长度，起始是0；逐一引入各节点，有Sr得到Sr+1，Sr+1是Sr相邻的下一个节点 
-            insertAfter ( search ( p->data, r, p ), p->data ); ///< search ( p->data, r, p )语义：在有序列表内节点p（可能是trailer）的n个（真）前驱中，找到不大于e的最后者。即在区间[p-r, p)查找p->data，返回不大于p->data的最靠后的位置
-            p = p->succ; remove(p->pred); ///< 转向下一节点
+            insert ( search ( p->data, r, p ), p->data ); ///< ；search ( p->data, r, p )语义：在有序列表内节点p（可能是trailer）的n个（真）前驱中，找到不大于e的最后者。即在区间[p-r, p)查找p->data，返回不大于p->data的最靠后的位置
+            p = p->succ; remove(p->pred); ///< 后缀无序序列 转向下一节点
             } ///< n次迭代，每次O(r+1)
     } ///< 仅使用O(1)的辅助空间，属于就地算法
     
+    /// insert、remove implementation in selection sort file
+    /// search implementation 
+    template <typename T> ListNodePosi<T> List<T>::search ( T const& e, int n, ListNodePosi<T> p ) const { ///< 在有序列表内节点p（可能是trailer）的n个（真）前驱中，找到不大于e的最后者
+        // assert: 0 <= n <= rank(p) < _size
+        /*DSA*/printf ( "searching for " ); print ( e ); printf ( " :\n" );
+        do {
+            p = p->pred; n--;  ///< 从右向左
+            /*DSA*/  printf ( " -->%4d", p->data );
+        } while ( ( -1 < n ) && ( e < p->data ) ); ///< 逐个比较，直至命中或越界
+        /*DSA*/  printf ( "\n" );
+        return p; ///< 返回查找终止的位置
+    } ///< 失败时，返回区间左边界的前驱（可能是header）——调用者可通过valid()判断成功与否
+
 算法时间：性能
     最好情况：
         完全（或几乎）有序
