@@ -19,7 +19,7 @@
         for (int i = 0; i < n; i++) tail = tail->succ; ///< head、tail可能是头、尾哨兵
         while ( 1 < n ) { ///< 反复从（非平凡的）待排序区间内找出最大者，并移至有序区间前端
             ListNodePosi<T> max = selectMax ( head->succ, n ); ///< selectMax(head->succ, n ) 从区间[head->succ, head->succ + n)中找出节点最大者，若有多个最大者，选最靠后的最大者
-            insert ( tail, remove ( max ) );  ///< 在tail后插入
+            insert ( remove ( max ), tail );  ///< 在tail前插入
             tail = tail->pred; n--; ///< 待排序区间、有序区间的范围，均同步更新
             }
         }
