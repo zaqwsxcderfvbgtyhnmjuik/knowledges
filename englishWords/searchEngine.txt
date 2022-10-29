@@ -122,4 +122,53 @@
     ⇩
     0x12 34 56 78 big endianness
 
+list structure:
+           pred {visible-----------------------list}  pred 
+    header <==> {first   <==> ...   ... <==>   last}  <==>  trailer
+           succ                                       succ
+     头           首                            末             尾
+     
+    联系：
+        头节点、尾节点 是与生俱来的，而且二者并不相同，且一定存在，但对外而言是可见的
+        首节点、尾节点 并不见得不相同，甚至不能保证它们存在，但对外而言是可见的
+        等效地，头、首、末、尾节点的秩可分别理解为-1、0、n-1、n
+    
+    node
+        n.节点
+    
+    predecessor node
+        n.前驱节点
+        
+    successor node
+        n.后继节点
+        
+    first/front node
+        n.首节点a0
+    
+    last/rear node
+        n.末节点an-1
+    
+    call by rank
+        n.寻秩访问
+        
+    call by position
+        n.寻位置访问 <==> 找到我的朋友A 的亲戚B 的同时C 的战友D ... 的同学Z
+    
+    header
+        n.页眉
+        
+    header node
+        n.头节点
+    
+    trailer 
+        n.拖尾物
+        n.追踪者
+        
+    trailer node
+        n.尾节点
+        
+                
+    
+    
+        
 
