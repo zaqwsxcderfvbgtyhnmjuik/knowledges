@@ -1,0 +1,96 @@
+/// this is a topic about priority queue///
+
+需求与动机
+    夜间门诊：
+        假设某家医院在夜间只安排了一位医生值班，那么他将按照什么样的次序为到来的病人提供服务呢？
+            如果只是一般的感冒发烧，头疼脑热，那么自然就是采用先来先服务的次序
+            然而真实的场景却复杂的多，倘若某一位病人发生了骨折，他更应该优先的接受治疗，即便他才刚刚到来，若果是一位心脏病的病人到来，那么骨折的病人就相对不是那么重要了。
+            在这一场景中，此前的先到先服务的原则已经不在继续适用。
+    
+    多任务调度：
+        那么CPU就类似于门诊医生，而同时参与调度的计算任务，则可类比于同时等候门诊的一批病人；每一个任务都有一个动态变化的指标，而操作系统将挑选指标最大的任务给CPU进行执行。
+        
+问题模式
+    server/algorithm <——call-by-priority—— clients data
+         ↑                                        ↓                                  
+    scheduler <——  priority queue   <——   importance priority
+
+PQ的操作接口规范
+    template <typename T> struct PQ { ///< 优先级队列PQ模板类
+        virtual void insert ( T ) = 0; ///< 按照比较器确定的优先级次序插入词条
+        virtual T getMax() = 0; ///< 取出优先级最高的词条
+        virtual T delMax() = 0; ///< 删除优先级最高的词条
+        }; ///< 与其说PQ是数据结构，不如说是ADT；其不同的实现方式，效率及适用场合也各不相同。
+    
+    ※ Stack和Queue，都是PQ的特例————优先级完全取决于元素的 插入次序。
+         ↑      ↑
+        LIFO   FIFO <—— first in first out
+         ↑
+        last in first out
+        
+基本实现
+    考虑效率与兼顾成本
+        Vector
+            getMax() <==> O(n)
+            delMax() <==> O(n)
+            insert() <==> O(1)
+            因此，无论如何这都不是一个可行的方案。
+        
+        Sorted Vector
+            getMax() <==> O(1)
+            delMax() <==> O(1)
+            insert() <==> O(n)
+            因此，也不是一个可行的方案。
+            
+        List
+            getMax() <==> O(n)
+            delMax() <==> O(n)
+            insert() <==> O(1)
+            因此，无论如何这都不是一个可行的方案。
+            
+        Sorted List
+            getMax() <==> O(1)
+            delMax() <==> O(1)
+            insert() <==> O(n)
+            因此，也不是一个可行的方案。
+            
+        BBST：AVL、Splay、Red-black 三个接口均只需O(logn)时间
+            但是，BBST的功能远远超出了PQ的需求...
+            PQ = 1 x insert() + 0.5 x search() + 0.5 x remove() = 2/3 x BBST
+                     insert()         getMax()         delMax()
+            杀鸡焉用牛刀！
+            
+            若只需查找 极值元，则不必维护所有元素之间的全序关系，偏序足矣
+            因此有理由相信，存在某种更为简单，维护成本更低的实现方式，使得各功能接口时间复杂度依然为O(logn)，而且实现效率更高。
+            
+            以Vector为形，与Tree为神，即完全二叉树堆
+            
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
