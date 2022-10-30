@@ -1,0 +1,74 @@
+/// this a topic about heap sort ///
+堆排序
+
+背景
+    完全二叉堆的一个应用，堆排序。
+    
+选取
+    在selectionSort()中，始终将整个序列分成两个部分，一个是左侧的待排序部分，以及右侧的已排序部分，前者中的任何一个元素都不大于后者中的任何一个元素，因此我们只需反复地遍历待排序元素，从中选取出最大者，并将它加入到已排序部分中，正因为我们每次都要对待排序部分做遍历，从而导致每次选取都需要线性的时间，以致整个算法需要平方量级的时间。
+    将U替换为H，将选择排序中的待排序部分替换为堆。
+    J. Williams 1964
+        初始化：heapify(), O(n), 建堆
+            迭代：delMax(), O(logn), 取出堆顶并调整复原
+        不变性：H <= S  ///< 待排序部分的任意一个元素都不大于已排序部分
+    正确性：等价于常规的选择排序，正确无疑。
+    
+就地：只需要O(1)的空间复杂度
+    在物理上，完全二叉堆 即是 向量
+    
+    存储结构图：
+        m-Heap-x-Sorted <== 将完全二叉堆含于向量中
+    
+    步骤：
+        a) 首先需要取出堆顶的最大元素m
+        b) 然后用堆末元素x来取而代之，即用x赋值到m之前的位置上
+        c) 然后再将备份的最大元素m植入x位置
+        d) 当然为了算法能持续下去，还得对新的根节点x做下滤调整
+        其中a) b) c)只需x元素和m元素的一次对换，即可等效地完成
+        
+        因此算法过程中的每一步迭代，可以进一步的规整为两大步骤：
+            1) 交换
+            2) 下滤
+        然后反复地交换、下滤，直至堆变空；在整个算法的过程中，除了交换需要用到常数个辅助空间外，我们不需要任何更多的辅助空间。
+        
+实现
+    /// 堆排序
+    template <typename T> void Vector<T>::heapSort(Rank lo, Rank hi) { ///< 对向量区间[lo, hi)做就地堆排序
+        T* A = _elem + lo; Rank n = hi - lo; heapify( A, n ); ///< 将待排序区间建成一个完全二叉堆，O(n)
+        while ( 0 < --n ) {//反复地摘除最大元并归入已排序的后缀，直至堆空
+            swap( A[0], A[n] ); percolateDown( A, n, 0 );//堆顶与末元素对换，再下滤
+            } 
+        }
+    
+    /// 弗洛伊德就地建堆算法
+    template <typename T> void heapify ( T* A, const Rank n ) { //Floyd建堆算法，O(n)时间
+        for ( Rank i = n/2 - 1; 0 <= i; i-- ) //自底而上，依次
+            percolateDown ( A, n, i ); //下滤各内部节点
+        }
+    
+    /// 下滤算法
+    #define  Parent(i)         ( ( ( i ) - 1 ) >> 1 ) ///< PQ[i]的父节点（floor((i-1)/2)，i无论正负）
+    #define  LChild(i)         ( 1 + ( ( i ) << 1 ) ) ///< PQ[i]的左孩子
+    #define  RChild(i)         ( ( 1 + ( i ) ) << 1 ) ///< PQ[i]的右孩子
+    #define  InHeap(n, i)      ( ( ( -1 ) < ( i ) ) && ( ( i ) < ( n ) ) ) ///< 判断PQ[i]是否合法
+    #define  LChildValid(n, i) InHeap( n, LChild( i ) ) ///< 判断PQ[i]是否有一个（左）孩子
+    #define  RChildValid(n, i) InHeap( n, RChild( i ) ) ///< 判断PQ[i]是否有两个孩子
+    #define  Bigger(PQ, i, j)  ( lt( PQ[i], PQ[j] ) ? j : i ) ///< 取大者（等时前者优先）
+    #define  ProperParent(PQ, n, i) /*父子（至多）三者中的大者*/ \
+                ( RChildValid(n, i) ? Bigger( PQ, Bigger( PQ, i, LChild(i) ), RChild(i) ) : \
+                ( LChildValid(n, i) ? Bigger( PQ, i, LChild(i) ) : i \
+                ) \
+                ) ///< 相等时父节点优先，如此可避免不必要的交换
+                
+    template <typename T> Rank percolateDown ( T* A, Rank n, Rank i ) { ///< 对向量前n个词条中的第i个实施下滤，i < n
+        Rank j; ///< i及其（至多两个）孩子中，堪为父者
+        while ( i != ( j = ProperParent ( A, n, i ) ) ) { ///< 只要i非j，则
+            swap ( A[i], A[j] ); i = j;  ///< 二者换位，并继续考查下降后的i
+            }
+        return i; ///< 返回下滤抵达的位置（亦i亦j）
+        }
+    
+
+    
+    
+    
