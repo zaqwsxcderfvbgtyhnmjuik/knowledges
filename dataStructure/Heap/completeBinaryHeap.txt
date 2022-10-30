@@ -1,0 +1,213 @@
+/// this is a topic about complete binary heap data structure ///
+完全二叉堆
+
+完全二叉树：complete binary tree
+    是AVL树的特例，平衡因子处处非负的AVL树，而且对于树中的任何一个节点v而言，若bf(v)=0，则左子树必然是满树；若bf(v)=1，则右子树必然是满树。
+    即如果忽略最底层，其余节点组成一棵满树。
+    
+结构性
+    ※逻辑上，等同于完全二叉树
+      物理上，直接借助向量实现
+    
+    ※逻辑节点与物理元素 依 层次遍历次序 彼此一一对应 <== Vector某元素的秩与该元素在完全二叉树中的父亲、左右孩子节点的Vector秩的对应关系可观察或证明得到。
+      节点v的秩 与 其父亲、左右孩子节点秩的对应关系：///< 物理上使用Vector，必须采用寻秩访问，通过秩对应关系体现其逻辑关系。
+        #define Parent(i) ( (i-1) >> 1 )   // i = 0,1,2,3,4,...
+        #define LChild(i) ( 1 + (i << 1) ) // 奇数
+        #define LChild(i) ( (1 + i) << 1 ) // 偶数
+      
+      如CBT：
+                0
+             1     2
+           3   4 5   
+      对应vector:
+        0
+         12
+           345
+      即012345
+      
+    ※即完全二叉堆    
+      
+接口定义
+    template <typename T> struct PQ_ComplHeap : public PQ<T>, public Vector<T> { ///< 完全二叉堆
+        protected:
+        Rank percolateUP(Rank i); ///< 上滤
+        Rank percolateDown(Rank n, Rank i);///< 下滤
+        void heapify (Rank n); ///< Floyd建堆算法        
+        
+        public:
+        PQ_ComplHeap() { } ///< 默认构造
+        PQ_ComplHeap ( T* A, Rank n ) { copyFrom ( A, 0, n ); heapify ( _elem, n ); } ///< 批量构造
+        void insert ( T ); ///< 按照比较器确定的优先级次序，插入词条
+        T getMax(); ///< 读取优先级最高的词条
+        T delMax(); ///< 删除优先级最高的词条
+        }; //PQ_ComplHeap
+    
+堆序性
+    数值上，只要 0 < i, 必满足：
+        H[i] <= H[ Parent(i) ]
+        
+    固H[0]即是全局最大元素
+        template<typename T> PQ_ComplHeap<T>::getMax() { return _elem[0]; } ///< O(1)
+
+插入与上滤：
+    算法：
+        为插入词条e,只需将e作为末元素接入向量
+            1) 结构性自然保持
+            2) 若堆序性也亦未破坏，则完成
+        否则，只能是e与其父节点违反堆序性
+            3) e与其父节点换位 // 若堆序性因此恢复，则完成
+        否则，依然只可能是e与其（新的）父节点违反堆序性
+            4)e再与父节点换位
+        不断重复...直到
+            5) e与其父亲满足堆序性，或者
+            6) e到达堆顶（没有父亲）
+        这一过程，亦即所谓的上滤（percolate up）
+    实现：
+        template <typename T> void PQ_ComplHeap<T>::insert( T e ) { ///< 插入
+            Vector<T>::insert( e ); ///< 接入向量末尾（Vector默认作为末元素插入）
+            percolateUp(_size - 1); ///< e词条进行上滤调整
+            }
+            
+        template <typename T> static bool lt ( T& a, T& b ) { return a < b; } //less than
+        template <typename T> Rank PQ_ComplHeap<T>::percolateUp ( Rank i ) { ///< 对第i个词条实施上滤，i < _size
+            while ( 0 < i ) { ///< 只要i有父亲（尚未抵达堆顶），即在抵达堆顶之前，反复地，则
+                Rank j = Parent ( i ); ///< 考查[i]之父亲[j]
+                if ( lt ( _elem[i], _elem[j] ) ) break; ///< 一旦父子顺序，上滤旋即完成；否则
+                swap ( _elem[i], _elem[j] ); i = j; ///< 父子换位，并继续考查上一层
+                } ///< end while
+            return i; ///< 返回上滤最终抵达的位置
+            }
+                
+    效率：时间复杂度
+        之所以称之为上滤，是因为每经过一步迭代，新插入元素的位置都会上升一层（在对应的逻辑完全二叉树中上升一层），换言之，整个算法在完全二叉堆的每一层次上，至多只需做一步迭代，
+        我们知道，完全二叉树是理想平衡的二叉树，其树高可以严格地控制在O(logn)的范围内；每一步迭代的时间只需要常数的时间。
+        所有的迭代时间累计也不过O(logn)。
+        
+        实际上，这种最坏情况出现的可能性是极低的。
+        更加精细的估算表明，在通常的随机分布下，每个节点上升的平均高度实际上只不过是常数O(1)，这也是完全二叉堆低成本高效率的又一重要证据。
+        
+            
+删除与下滤
+    算法：
+        最大元素始终在堆顶，摘除向量首元素，代之以末元素e
+            1) 结构性保持，若堆序性依然保持则完成 
+        否则，即e与孩子们（仅仅是指左右孩子）违背堆序性
+            2) e与孩子中的最大者换位，若堆序性因此恢复，则完成
+        否则，即与其（新的）孩子们...
+            3) e再次与孩子中的大者换位
+        不断重复...直到
+            4) e与其孩子们满足堆序性，或者
+            5) e到达堆底（没有孩子）
+        这一过程，亦即所谓的下滤（percolate down）
+    
+    实现：
+        template <typename T> T PQ_ComplHeap<T>::delMax() { ///< 删除
+            T maxElem = _elem[0]; _elem[0] = _elem[ --_size ]; ///< 摘除堆顶，代之以末元素e
+            percolateDown ( _size, 0 ); ///< 对新堆顶实施下滤
+            return maxElem; ///< 返回此前备份的最大词条
+            }
+        
+        #define  Parent(i)         ( ( ( i ) - 1 ) >> 1 ) ///< PQ[i]的父节点（floor((i-1)/2)，i无论正负）
+        #define  LChild(i)         ( 1 + ( ( i ) << 1 ) ) ///< PQ[i]的左孩子
+        #define  RChild(i)         ( ( 1 + ( i ) ) << 1 ) ///< PQ[i]的右孩子
+        #define  InHeap(n, i)      ( ( ( -1 ) < ( i ) ) && ( ( i ) < ( n ) ) ) ///< 判断PQ[i]是否合法
+        #define  LChildValid(n, i) InHeap( n, LChild( i ) ) ///< 判断PQ[i]是否有一个（左）孩子
+        #define  RChildValid(n, i) InHeap( n, RChild( i ) ) ///< 判断PQ[i]是否有两个孩子
+        #define  Bigger(PQ, i, j)  ( lt( PQ[i], PQ[j] ) ? j : i ) ///< 取大者（等时前者优先）
+        #define  ProperParent(PQ, n, i) /*父子（至多）三者中的大者*/ \
+            ( RChildValid(n, i) ? Bigger( PQ, Bigger( PQ, i, LChild(i) ), RChild(i) ) : \   ///< 右孩子存在，则左孩子必然存在
+            ( LChildValid(n, i) ? Bigger( PQ, i, LChild(i) ) : i \
+            ) \
+            ) ///< 相等时父节点优先，如此可避免不必要的交换
+
+        template <typename T> Rank PQ_ComplHeap<T>::percolateDown (Rank n, Rank i) { ///< 对前n个词条中的第i个词条实施下滤，i < n
+            Rank j; ///< i及其（至多两个）孩子中，堪为父者
+            while ( i != ( j = ProperParent ( A, n, i ) ) ) { ///< 只要i非j，则
+                swap ( A[i], A[j] ); i = j; ///< 二者换位，并继续考查下降后的i
+                }
+                return i; ///< 返回下滤抵达的位置（亦i亦j）
+            }
+    效率：
+        O(logn)
+    
+批量建堆：heapification
+    算法1:自上而下的上滤
+        自上而下的上滤：
+            template <typename T> PQ_ComplHeap<T>::PQ_ComplHeap ( T* A, Rank n ) { copyFrom ( A, 0, n ); heapify ( _elem, n ); } //批量构造
+            template <typename T> void heapify ( T* A, const Rank n ) { 
+                /// 蛮力算法：自上而下的上滤：
+                for (int i = 1; i < n; i++) ///< 按照 层次遍历序列次序 逐一；一个节点的堆是平凡堆，直接从秩为1开始
+                    percolateUp ( i );  ///< 经上滤插入各节点
+                }
+
+        自上而下的上滤效率：
+            最坏情况下，
+                每个节点都需上滤至根
+                所需成本线性正比于其深度
+
+            即便只考虑底层
+                n/2个叶节点，深度均为O(logn)
+                累计耗时O(nlogn)
+
+            这样长的时间，本足以全排序，应该能够更快的...
+    
+    算法2:自下而上的下滤  
+        任意给定堆H0和H1，以及节点p，
+                p
+            r0      r1 ///< r0和r1分别是堆H0和H1的堆顶节点
+            H0      H1
+        为得到堆 H0 ∪ {p} ∪ H1，只需将r0和r1当做p的孩子，对p下滤
+        
+        自下而上的下滤：
+            template <typename T> PQ_ComplHeap<T>::PQ_ComplHeap ( T* A, Rank n ) { copyFrom ( A, 0, n ); heapify ( _elem, n ); } //批量构造
+            template <typename T> void heapify ( T* A, const Rank n ) { ///< Robert Floyd, 1964
+                /// Floyd建堆算法，O(n)时间
+                for ( Rank i = n/2 - 1; 0 <= i; i-- ) ///< 自底而上，自右而左，从第一个内部节点开始 依次
+                    percolateDown ( A, n, i ); ///< 下滤各内部节点，对于叶子节点而言，下滤没有实际意义
+                }///< 可理解为子堆的逐层合并，————由以上性质，堆序性最终必然在全局恢复
+                
+                补充：最后一个内部节点的秩的求解
+                    方法1：以失败告终，形式上统一不起来
+                        若是满二叉树则叶子节点的数量⌊n/2⌋ + 1个元素；n - ⌊n/2⌋ - 1个内部节点，n是奇数，且n=⌊n/2⌋ + ⌊n/2⌋ + 1，得满二叉树的内部节点个数为⌊n/2⌋个；则在向量中秩为⌊n/2⌋-1
+                        可惜完全二叉堆是逻辑上是完全二叉树，因此引入两条定理：
+                            定理1：n0=n2+1
+                                证明：
+                                    n0是出度为0的节点，即叶子节点
+                                    n1是出度为1的节点，即内部节点
+                                    n2是出度为2的节点，即内部节点
+                                    设树的节点数为n,那么n=n0+n1+n2；除了根节点，每一个节点都有一条入边，所以边数为n-1,而边的数量又为2*n2+n1
+                                    可推导得：n0=n2+1
+                            定理2：n0=(n+1)/2
+                                证明：
+                                    因为n=n0+n1+n2，而n0=n2+1
+                                    所以n=2*n0+n1-1
+                                    完全二叉树除了底层，是一棵满二叉树，满二叉树的节点数量为奇数，基于此分类讨论：
+                                        若n是奇数，则完全二叉树底层节点数是偶数；即n1=0，则n=2*n0-1，推出n0=(n+1)/2，等价于n0=n/2 + 1
+                                        若n是偶数，则完全二叉树底层节点数是奇数；即n1=1，则n=2*n0  ，推出n0=(n+1)/2，等价于n0=n/2
+                            
+                    方法2：
+                        最后一个内部节点，即末节点的父亲，因此可得：
+                        #define Parent(i) ( (i-1) >> 1)     ///< i是秩，从0开始，若i<1，即根节点无父亲
+                        #define LastInternal(n) Patent(n-1) ///< 最后一个内部节点（即末节点父亲）
+                        于是最后一个内部节点的秩为：(n-1-1)/2，即⌊n/2⌋ - 1
+                        升华为定理：
+                            n个元素的完全/满二叉树的最后一个内部节点，在其层次遍历序列次序中，该层次遍历序列存储在秩从0开始的向量中，则最后一个内部节点在该向量中的秩为⌊n/2⌋ - 1
+                    
+        自下而上的下滤效率：
+            每个内部节点所需的调整时间，正比于其高度而非深度。
+            T = height(A[n/2-1]) + height(A[n/2-2]) + ... + height(A[2]) + height(A[1]) + height(A[0]) = O(n)
+            证明
+                略
+            
+    对比：
+        算法1自上而下的上滤是以各节点（除去根节点）的深度累加和为总耗费时间，
+        算法2自下而上的下滤是以各内部节点的高度累加和为总耗费时间，
+        为何看上去，差不多，实际上却是相差甚远呢？
+            对算法1而言，从根节点的左孩子开始，从上而下，从左而右地累加各节点的深度，不仅各节点深度越来越高，而且同时完全二叉堆的底部节点众多，因此很大
+            对算法2而言，从第一个内部节点开始，从下而上，从右而左地累加各内部节点的高度，虽然内部节点的高度越来越高，但是内部节点的数量是指数级下降，因此很小
+            
+            
+            
+            
+            
+            
