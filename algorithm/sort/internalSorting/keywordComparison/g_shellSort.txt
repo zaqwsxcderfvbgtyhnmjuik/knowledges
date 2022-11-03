@@ -20,10 +20,117 @@
     取w5 = 8，对13个整数80 23 19 40 85 1 18 92 71 8 96 46 12 ，以不超过8为准则，将整个序列分为段，每一段都对应矩阵的一行，这样就得到了一个宽度为8的矩阵，接下来对整个矩阵进行逐列排序，如下
     80 23 19 40 85 01 18 92
     71 08 96 46 12
-    ↓↓
+    ↓↓ <-- 逐列排序
     71 08 19 40 12 01 18 92
     80 23 96 46 85
     接下来，将矩阵每一行逐个串接，形成一个序列：
     71 08 19 40 12 01 18 92 80 23 96 46 85
     接下来，采用w4=5,如w5=8一般操作，直到w1=1即可完成排序。
+    
+寻秩访问：call-by-rank
+    如何实现矩阵重排？莫非，需要使用二维向量？实际上，借助一维向量足矣
+    
+    在每步迭代中，若当前的矩阵宽度为w，则
+        第i列中的记录依次就是：a[i + k*w],  0 <= i < w ; 1 <= w ; 0 <= k < n/w
+            
+    各列内部的排序如何实现？必须采用 输入敏感（input sensitive）的算法，以保证有序性可持续改善，且总体成本足够低廉。比如直接插入排序就具有输入敏感性，其实际运行时间，更多取决于输入序列所含逆序对的总数
+    
+    Shellsort总体效率，取决于具体使用何种步长序列H
+        主要考察和评测：
+            1. 比较操作、移动操作的次数
+            2. 收敛的速度，或反过来迭代的轮数（矩阵的重组次数，每次重组相当于一次整个序列的遍历）
+            
+        Shell's Sequence (最早提出的步长序列H)
+            Hshell = {1, 2, 4, 8, ..., 2^k, ... } ///< 1959 Shell
+            采用Hshell步长序列，在最坏情况下需要运行O(n^2)时间
+                考察由子序列A = unsort[0, 2^(N-1) ) 和 B = unsort[2^(N-1), 2^N )，交错而成的：///< 此处取N=4,可有如下一种可能
+                11    14    10    15    09    08    13   12         ///< B序列，被安置在秩为偶数（0,2,4,...）的位置
+                   04    03    00    01    06    07    02   05      ///< A序列，被安置在秩为奇数（1,3,5,...）的位置
+                采用Hshell步长序列对其进行排序，在2-sorting刚结束时，A和B必然各自有序：
+                08    09    10    11    12    13    14    15        ///< B仍然占据秩为偶数的位置
+                   00    01    02    03    04    05    06    07     ///< A仍然占据秩为奇数的位置
+               其中的逆序对仍然很多，1-sorting（插入排序<--复杂度取决于逆序对数量） 仍需1 + 2 + 3 + 4 + ... + 2^(N-1) = O(n^2)时间
+                   考察其逆序对：
+                    i(15) = 1 ///< 即(15,7); 元素15所构成的逆序对
+                    i(14) = 2 ///< 即(14,6)、(14,7); 
+                    i(13) = 3
+                    ...
+                    i(08) = 8
+                   可知最坏复杂度就是O(n^2)
+               探求导致这种缺陷的根源，观察Hshell步长序列，与其说其中大量的元素都是偶数，不如更一般的说，其中的各项并非互素（互为质数）；因此，每一轮的排序，都有大量的精力浪费于对前一轮排序工作的重复之上；是的，即相邻项要尽可能的互素，就拿到了打开新方法大门的钥匙。
+
+lineal combination
+    Let g, h ∈ N ///< 自然数集（0, 1, 2, ..., n）
+        then for any m, n ∈ N
+        f = mg + nh is called a linear combination of g and h ///< f is a nature number
+    
+    Let g, h ∈ N be relatively prime ///< g, h 互质
+        N(g, h) = {numbers that are NOT combinations of g and h } ///< N(g, h) is a number not coming from f 
         
+    Let x(g, h) = max ( N(g, h) ) ///< x(g, h) is a number coming from N(g, h)
+        theorem：x(g, h) = (g-1)*(h-1) - 1 = gh - g - h  ///< 来自于数论中的结论
+        e.g. x(3, 7) = 11; x(4, 9) = 23; x(4, 13) = 35; x(5, 14) = 51
+        
+定理k
+    h-sorting & h-ordered 
+        h-ordered：Let h ∈ N, A sequence S[0,n) is called h-ordered if 
+            S[i] <= S[i+h] holds for 0 <= i < n-h 
+        
+        A 1-ordered sequence is sorted 
+        
+        h-sorting：an h-ordered sequence is obtained by :
+            1) arranging S into a 2D matrix with h columns and 
+            2) sorting each column respectively ///< 各列独自排序
+            
+    Theorem K
+        Knuth, ACP vol.3 p.90   ///< a book of knuth
+        A g-ordered sequence REMAINS g-ordered after being h-sorted , g < h ///< a thoery , prove is little difficult 
+        
+
+lineal combination：续
+    A sequence that is both g-ordered and h-ordered is called (g, h)-ordered, which must be both (g+h)-ordered and (mg + nh)-ordered for any m, n ∈ N ///< thorem K 推广
+    
+Inversion：逆序对
+    Let S[0, n) be a (g, h)-ordered sequence , where g & h are relatively prime (g, h互质)
+    现在，将注意力集中在秩为i的那个元素，如果g和h是互素的，而且整个序列是同时关于g和h有序的，那么相对于元素S[i]，哪些元素必然是顺序的，反过来，哪些元素才有可能是逆序？
+          [i+1]...[i+gh-g-h-1] could be smaller than S[i]，进而造成逆序对
+                        ↓
+    [i-2][i-1][i-0],  ...  , [i+gh-g-h-1] [i+gh-g-h ], ..., [n-1]  ///< S[i+gh-g-h ]...S[n-1] must be no less than S[i]
+              ↑     ←-(g-1)(h-1)-→       ↑
+    
+    按照以上优化思路，后人针对ShellSort曾经设计过许多更为优化的步长序列，比如PS步长序列、
+    
+PS 序列
+    现在，可以回到增量序列的优化设计问题。按照此前“尽力避免增量值之间公共因子”的思路，Papernov和Stasevic于1965年提出了另一增量序列：
+        Hps = { 1, 3, 7, 15, 31, 63, ..., 2^k - 1, ... }
+    不难看出，其中相邻各项的确互素。我们将看到，采用这一增量序列，希尔排序算法的性能可以改进至O(n3/2)，其中n为待排序向量的规模。
+        
+Pratt于1971年也提出了自己的增量序列：
+    Hpratt = { 1, 2, 3, 4, 6, 8, 9, 12, 16, ..., 2^p*3^q, ... }
+    可见，其中各项除2和3外均不含其它素因子。
+    可以证明，采用Hpratt序列，希尔排序算法至多运行O(nlog2n)时间
+
+Sedgewick序列
+    尽管Pratt序列的效率较高，但因其中各项的间距太小，会导致迭代趟数过多。为此，
+    Sedgewick综合Papernov-Stasevic序列与Pratt序列的优点，提出了以下增量序列：
+    Hsedgewick = { 1, 5, 19, 41, 109, 209, 505, 929, 2161, 3905, 8929, ... }
+        其中各项，均为：4^k - 3*2^k + 1的形式。
+    如此改进之后，希尔排序算法在最坏情况下的时间复杂度为O( n^(4/3) )，平均复杂度为O( n^(7/6) )。
+    更重要的是，在通常的应用环境中，这一增量序列的综合效率最佳。
+    
+实现
+    /// 向量希尔排序
+    template <typename T> void Vector<T>::shellSort ( Rank lo, Rank hi ) { ///< 0 <= lo < hi <= size <= 2^30
+    for ( Rank d = 0x3FFFFFFF; 0 < d; d >>= 1 ) ///< PS Sequence: { 1, 3, 7, 15, ..., 1073741823 }
+        for ( Rank j = lo + d; j < hi; j++ ) { ///< for each j in [lo+d, hi)
+            T x = _elem[j]; Rank i = j - d;
+            while ( lo <= i && _elem[i] > x ) {
+                _elem[i + d] = _elem[i]; i -= d; 
+                }
+            _elem[i + d] = x; ///< insert [j] into its subsequence
+        }
+     }
+
+
+
+
