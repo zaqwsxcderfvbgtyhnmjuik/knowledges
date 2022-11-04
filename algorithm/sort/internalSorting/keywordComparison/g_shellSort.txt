@@ -5,12 +5,12 @@
     Donald L. Shell, 1959 : 将整个序列视作一个矩阵，逐列各自排序w-sorting
     
 思想
-    递减增量 diminishing increment
+    递减增量 diminishing increment <== 如Hseries = 1, 3, 5 ,先5-排序，再3-排序，最后1-排序
         由粗到细：重排矩阵，使其变窄，更高，再次逐列排序w-sorting
         逐步求精：如此往复，直至矩阵最窄最高变成一列l-sorting
     
     步长序列：step sequence 
-        由各矩阵宽度构成的逆序列
+        由 各矩阵宽度 构成的逆序列
             H = {w1 = 1, w2, w3, w4 , ... }
             
     正确性：最后一次迭代，等同于全排序
@@ -27,10 +27,15 @@
     71 08 19 40 12 01 18 92 80 23 96 46 85
     接下来，采用w4=5,如w5=8一般操作，直到w1=1即可完成排序。
     
+    总结：
+        5-排序，是一维向量以不超过5个元素为原则从左到右顺序切割分成多个段，从左至右第i个段都对应为5-矩阵（宽度为5或列向量个数为5的矩阵）的一行，对矩阵的每个列从左到右逐一插入排序，共有5列，即进行5趟插排；
+        不稳定
+        
+    
 寻秩访问：call-by-rank
     如何实现矩阵重排？莫非，需要使用二维向量？实际上，借助一维向量足矣
     
-    在每步迭代中，若当前的矩阵宽度为w，则
+    在每步迭代中，若当前的矩阵宽度为w，即w-sorting，则
         第i列中的记录依次就是：a[i + k*w],  0 <= i < w ; 1 <= w ; 0 <= k < n/w
             
     各列内部的排序如何实现？必须采用 输入敏感（input sensitive）的算法，以保证有序性可持续改善，且总体成本足够低廉。比如直接插入排序就具有输入敏感性，其实际运行时间，更多取决于输入序列所含逆序对的总数
@@ -103,7 +108,7 @@ Inversion：逆序对
 PS 序列
     现在，可以回到增量序列的优化设计问题。按照此前“尽力避免增量值之间公共因子”的思路，Papernov和Stasevic于1965年提出了另一增量序列：
         Hps = { 1, 3, 7, 15, 31, 63, ..., 2^k - 1, ... }
-    不难看出，其中相邻各项的确互素。我们将看到，采用这一增量序列，希尔排序算法的性能可以改进至O(n3/2)，其中n为待排序向量的规模。
+    不难看出，其中相邻各项的确互素。我们将看到，采用这一增量序列，希尔排序算法的性能可以改进至O( n^(3/2) )，其中n为待排序向量的规模。
         
 Pratt于1971年也提出了自己的增量序列：
     Hpratt = { 1, 2, 3, 4, 6, 8, 9, 12, 16, ..., 2^p*3^q, ... }
@@ -120,15 +125,16 @@ Sedgewick序列
     
 实现
     /// 向量希尔排序
-    template <typename T> void Vector<T>::shellSort ( Rank lo, Rank hi ) { ///< 0 <= lo < hi <= size <= 2^30
+    template <typename T> void Vector<T>::shellSort ( Rank lo, Rank hi ) { ///< to sort [lo, hi) vector ; 0 <= lo < hi <= size <= 2^30
     for ( Rank d = 0x3FFFFFFF; 0 < d; d >>= 1 ) ///< PS Sequence: { 1, 3, 7, 15, ..., 1073741823 }
         for ( Rank j = lo + d; j < hi; j++ ) { ///< for each j in [lo+d, hi)
-            T x = _elem[j]; Rank i = j - d;
-            while ( lo <= i && _elem[i] > x ) {
-                _elem[i + d] = _elem[i]; i -= d; 
-                }
-            _elem[i + d] = x; ///< insert [j] into its subsequence
-        }
+            T x = _elem[j]; Rank i = j - d;    ///< d-matrix ( d个列的矩阵 ) columns batch insertion sort (批量插入排序) , such as this situation, [lo, hi) == [0, 15) == {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14} , d == 3, 3-matrix like this : then for each j in [lo+d, hi) == [0+3, 15) == [3, 15) , can insert 3 into ordered subsequence  {0} to form {0, 3},                       insert 4 into ordered subsequence {1} to form {1, 4},                       insert 5 into ordered subsequence {2} to form {2, 5}               
+            while ( lo <= i && _elem[i] > x ) {                                                                                                                                                                         0  1  2                                                                     can insert 6 into ordered subsequence  {0, 3} to form {0, 3, 6},                 insert 7 into ordered subsequence {1, 4} to form {1, 4, 7},                 insert 8 into ordered subsequence {2, 5}  to form {2, 5, 8} 
+                _elem[i + d] = _elem[i]; i -= d;                                                                                                                                                                        3  4  5                                                                     can insert 9 into ordered subsequence  {0, 3, 6} to form {0, 3, 6, 9},           insert 10 into ordered subsequence {1, 4, 7} to form {1, 4, 7, 10},         insert 11 into ordered subsequence {2, 5, 8}  to form {2, 5, 8, 11} 
+                }                                                                                                                                                                                                       6  7  8                                                                     can insert 12 into ordered subsequence  {0, 3, 6, 9} to form {0, 3, 6, 9, 12},   insert 13 into ordered subsequence {1, 4, 7, 10} to form {1, 4, 7, 10, 13}, insert 14 into ordered subsequence {2, 5, 8, 11}  to form {2, 5, 8, 11, 14} 
+                }                                                                                                                                                                                                       6  7  8                                                                     上述执行步骤，实际上是从左到右从上到下的进行执行；但可在逻辑上看成从上到下，从左到右执行，即符合对3-矩阵从左到右对每一列进行插入排序。代码写成如此，是降低复杂度的一种手法。
+            _elem[i + d] = x; ///< insert [j] into its subsequence                                                                                                                                                      9  10 11       
+        }                                                                                                                                                                                                               12 13 14        
      }
 
 
