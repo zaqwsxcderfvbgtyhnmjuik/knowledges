@@ -1,0 +1,19 @@
+/// this is a topic about unix network programming ///
+
+// 翻译对
+    protocol / 协议
+    daemon   / 守护进程
+    client   / 客户端
+    server   / 服务端
+    asynchronous callback / 异步回调
+    program  / 程序
+    process  / 进程
+    transmission control protocol  / 传输控制协议（TCP）
+    internet protocol  / 网际协议（IP）
+    user datagram protocol / 用户数据报协议（UDP）
+    local area network / 局域网（LAN）
+    router / 路由器
+    wide area network / 广域网（WAN）
+    
+    
+
