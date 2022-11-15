@@ -15,5 +15,14 @@
     router / 路由器
     wide area network / 广域网（WAN）
     
+    htonl() / host to network long      <== for uint32_t 
+    ntohl() / network to host long      <== for uint32_t 
+    htons() / host to network short     <== for uint16_t 
+    ntohs() / network to host short     <== for uint16_t 
+    synopsis/ n. （书、剧本或电影等的）概要，摘要，梗概；提要，概要
+    prolog  / n. 序言；开端；开场白（等于 prologue）
+    
+    AF_INET / address family internet
+    PF_INET / protocol family internet
     
 
