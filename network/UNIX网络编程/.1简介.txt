@@ -19,10 +19,25 @@
     ntohl() / network to host long      <== for uint32_t 
     htons() / host to network short     <== for uint16_t 
     ntohs() / network to host short     <== for uint16_t 
+    
     synopsis/ n. （书、剧本或电影等的）概要，摘要，梗概；提要，概要
     prolog  / n. 序言；开端；开场白（等于 prologue）
     
     AF_INET / address family internet
     PF_INET / protocol family internet
     
-
+    inet_pton() / internet_presentation(表示) to numeric(数值) <== to convert the character string src into a network address structure in the AF_INET or PF_INET address family, then copies the network address structure to dst, dst is written in network byte order.
+    inet_ntop() / internet_numeric to presentation 
+    
+    connect()   / shall attempt to make a connection on a connection-mode socket or to set or reset the peer address of a connectionless-mode socket.
+    file descriptor / 文件描述符
+    peer address / 对等端网络地址
+    
+    socket API / 套接字API
+    TCP套接字  / TCP endpoint <== 等价
+    protocol data unit / 协议数据单元 <== 计算机网络各层对等实体间交换的 单位信息
+    segment / 分节 <== 对应于TCP传输层的PDU
+    service data unit / 服务数据单元 <== 每层的PDU通过由紧邻下层提供给本层的服务接口，作为下层的服务数据单元（SDU）传递给下层，并由下层间接完成本层的PDU交换；如果本层的PDU大小超过紧邻下层的最大SDU限制，那么本层还要事先把PDU划分成若干个合适的片段让下层分开载送，再在相反方向把这些片段重组成PDU。同一层内SDU作为PDU的净荷(payload)字段出现，因此可以说上层PDU由本层PDU（通过其SDU字段）承载。每层的PDU除用于承载紧邻上层的PDU（即承载数据）外，也用于承载本层协议内部通信所需的控制信息。
+    
+    application data / 应用数据 <== 应用层实体（如客户或服务器进程）间交换的PDU称为应用数据。
+    
