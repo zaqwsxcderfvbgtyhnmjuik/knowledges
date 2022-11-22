@@ -1,0 +1,5 @@
+/// this is a topic about tutorial introduction ///
+
+introduction:
+    The CMake tutorial provides a step-by-step(循序渐进的) guide that covers(覆盖了) common build system issues that CMake helps address. 
+    Seeing(了解) how various topics all work together in an example project can be very helpful.
