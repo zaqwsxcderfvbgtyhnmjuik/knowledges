@@ -3,3 +3,7 @@
 introduction:
     The CMake tutorial provides a step-by-step(循序渐进的) guide that covers(覆盖了) common build system issues that CMake helps address. 
     Seeing(了解) how various topics all work together in an example project can be very helpful.
+    
+    The tutorial source code examples(教程源代码示例) are available in this archive. 
+    Each step has its own subdirectory containing code that may be used as a starting point. 
+    The tutorial examples are progressive(循序渐进的) so that each step provides the complete solution for the previous step.
