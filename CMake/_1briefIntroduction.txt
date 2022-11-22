@@ -1,0 +1,85 @@
+/// this is a topic about cmake brief introduction ///
+
+CMake是什么：工具序列
+    CMake is an open-source, cross-platform family of tools designed to build, test and package software. 
+    CMake is used to control the software compilation process using simple platform and compiler independent configuration files, 
+    and generate native makefiles and workspaces that can be used in the compiler environment of your choice. 
+    
+    CMake is a tool to manage building of source code. 
+    Originally, CMake was designed as a generator for various dialects(各种方言) of Makefile, 
+    today CMake generates modern buildsystems(现代的构建系统) such as Ninja as well as(和) project files for IDEs such as Visual Studio and Xcode.
+    
+    CMake is widely used for the C and C++ languages, but it may be used to build source code of other languages too.
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
