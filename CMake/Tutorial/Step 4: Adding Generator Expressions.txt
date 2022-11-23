@@ -1,0 +1,125 @@
+/// this is a topic about Adding Generator Expressions(添加生成器表达式) ///
+introduction
+    Generator expressions are evaluated during build system generation to produce information specific to each build configuration(生成器表达式在生成生成系统期间进行求值，以生成特定于每个生成配置的信息).
+    Generator expressions are allowed in the context of many target properties, such as LINK_LIBRARIES, INCLUDE_DIRECTORIES, COMPILE_DEFINITIONS and others.
+    
+    They may also be used when using commands to populate(填充) those properties, such as target_link_libraries(), target_include_directories(), target_compile_definitions() and others.
+    Generator expressions may be used to enable conditional linking, conditional definitions used when compiling, conditional include directories and more. 
+    The conditions may be based on the build configuration, target properties, platform information or any other queryable information.
+    There are different types of generator expressions including Logical, Informational, and Output expressions.
+    
+    Logical expressions are used to create conditional output. 
+    The basic expressions are the 0 and 1 expressions. 
+    A $<0:...> results in the empty string, and <1:...> results in the content of .... They can also be nested(嵌套的).
+
+Exercise 1 - Setting the C++ Standard with Interface Libraries(使用接口库设置C++标准)
+    Before we use generator expressions let's refactor our existing code to use an INTERFACE library. 
+    We will use that library in the next step to demonstrate a common use for generator expressions.
+
+    Goal
+        Add an INTERFACE library target to specify the required C++ standard.
+    
+    Getting Started
+        In this exercise, we will refactor our code to use an INTERFACE library to specify the C++ standard.
+        The starting source code is provided in the Step4 directory. In this exercise, complete TODO 1 through TODO 3.
+        Start by editing the top level CMakeLists.txt file. 
+        Construct an INTERFACE library target called tutorial_compiler_flags and specify cxx_std_11 as a target compiler feature.
+
+        Modify CMakeLists.txt and MathFunctions/CMakeLists.txt so that all targets have a target_link_libraries() call to tutorial_compiler_flags.
+
+    Build and Run
+        Make a new directory called Step4_build, run the cmake executable or the cmake-gui to configure the project and then build it with your chosen build tool or by using cmake --build . from the build directory.
+        Here's a refresher of what that looks like from the command line:
+            mkdir Step4_build
+            cd Step4_build
+            cmake ..
+            cmake --build .
+        
+        Next, use the newly built Tutorial and verify that it is working as expected.
+
+    Solution
+        Let's update our code from the previous step to use interface libraries to set our C++ requirements.
+        To start, we need to remove the two set() calls on the variables CMAKE_CXX_STANDARD and CMAKE_CXX_STANDARD_REQUIRED. 
+        The specific lines to remove are as follows:
+            CMakeLists.txt
+            set(CMAKE_CXX_STANDARD 11)
+            set(CMAKE_CXX_STANDARD_REQUIRED True)
+        
+        Next, we need to create an interface library, tutorial_compiler_flags. 
+        And then use target_compile_features() to add the compiler feature cxx_std_11.
+            TODO 1: Click to show/hide answer
+            TODO 1: CMakeLists.txt
+            add_library(tutorial_compiler_flags INTERFACE)
+            ★target_compile_features(tutorial_compiler_flags INTERFACE cxx_std_11)
+            
+        Finally, with our interface library set up, we need to link our executable Target and our MathFunctions library to our new tutorial_compiler_flags library. 
+        Respectively(分别地), the code will look like this:
+            TODO 2: Click to show/hide answer
+            TODO 2: CMakeLists.txt
+            target_link_libraries(Tutorial PUBLIC ${EXTRA_LIBS} tutorial_compiler_flags)
+            and this:
+            TODO 3: Click to show/hide answer
+            TODO 3: MathFunctions/CMakeLists.txt
+            target_link_libraries(MathFunctions tutorial_compiler_flags)
+        
+        With this, all of our code still requires C++ 11 to build. 
+        Notice though that with this method, it gives us the ability to be specific about which targets get specific requirements. 
+        In addition, we create a single source of truth in our interface library.
+
+Exercise 2 - Adding Compiler Warning Flags with Generator Expressions
+    A common usage of generator expressions is to conditionally add compiler flags, such as those for language levels or warnings.
+    A nice pattern is to associate this information to(将此信息关联到) an INTERFACE target allowing this information to propagate(允许此信息传播).
+
+    Goal
+        Add compiler warning flags when building but not for installed versions.
+    
+    Getting Started
+        Start with the resulting files from Exercise 1. Complete TODO 4 through TODO 7.
+
+        First, in the top level CMakeLists.txt file, we need to set the cmake_minimum_required() to 3.15. 
+        In this exercise we are going to use a generator expression which was introduced in CMake 3.15.
+
+        Next we add the desired compiler warning flags that we want for our project. 
+        As warning flags vary(变化) based on the compiler, we use the COMPILE_LANG_AND_ID generator expression to control which flags to apply given a language and a set of compiler ids.
+
+    Build and Run
+        Since we have our build directory already configured from Exercise 1, simply rebuild our code by calling the following:
+            cd Step4_build
+            cmake --build .
+    
+    Solution
+        Update the cmake_minimum_required() to require at least CMake version 3.15:
+            TODO 4: Click to show/hide answer
+            TODO 4: CMakeLists.txt
+            cmake_minimum_required(VERSION 3.15)
+        
+        Next we determine which compiler our system is currently using to build since warning flags vary based on the compiler we use. 
+        This is done with the COMPILE_LANG_AND_ID generator expression. 
+        We set the result in the variables gcc_like_cxx and msvc_cxx as follows:
+            TODO 5: Click to show/hide answer
+            TODO 5: CMakeLists.txt
+            set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
+            set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
+        
+        Next we add the desired compiler warning flags that we want for our project. 
+        Using our variables gcc_like_cxx and msvc_cxx, we can use another generator expression to apply the respective flags(各自的标志) only when the variables are true. 
+        We use target_compile_options() to apply these flags to our interface library.
+            TODO 6: Click to show/hide answer
+            TODO 6: CMakeLists.txt
+            ★target_compile_options(tutorial_compiler_flags INTERFACE
+              "$<${gcc_like_cxx}:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>"
+              "$<${msvc_cxx}:-W3>"
+            )
+        
+        Lastly, we only want these warning flags to be used during builds. 
+        Consumers of our installed project should not inherit our warning flags. 
+        To specify this, we wrap our flags in a generator expression using the BUILD_INTERFACE condition. 
+        The resulting full code looks like the following:
+            TODO 7: Click to show/hide answer
+            TODO 7: CMakeLists.txt
+            ★target_compile_options(tutorial_compiler_flags INTERFACE
+              "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
+              "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"
+                )
+
+
