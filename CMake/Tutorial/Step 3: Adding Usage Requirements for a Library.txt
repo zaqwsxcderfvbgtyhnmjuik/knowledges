@@ -1,0 +1,68 @@
+/// this is a topic about Adding Usage Requirements(使用要求) for a Library ///
+
+Exercise 1 - Adding Usage Requirements for a Library
+    Usage requirements of a target parameters allow for far better control over a library or executable's link and include line while(同时) also giving more control over the transitive property(传递属性) of targets inside CMake. 
+    The primary commands that leverage usage requirements are:
+        target_compile_definitions()
+        target_compile_options()
+        target_include_directories()
+        target_link_directories()
+        target_link_options()
+        target_precompile_headers()
+        target_sources()
+
+    Goal
+        Add usage requirements for a library.
+        
+    Getting Started
+        In this exercise, we will refactor(重构) our code from Adding a Library to use the modern CMake approach. 
+        We will let our library define its own usage requirements so they are passed transitively to other targets as necessary. 
+        In this case, MathFunctions will specify any needed include directories itself. 
+        Then, the consuming target Tutorial simply needs to link to MathFunctions and not worry about any additional include directories.
+
+        The starting source code is provided in the Step3 directory. In this exercise, complete TODO 1 through TODO 3.
+
+        First, add a call to target_include_directories() in MathFunctions/CMakeLists. 
+        Remember that ◆CMAKE_CURRENT_SOURCE_DIR is the path to the source directory currently being processed.
+
+        Then, update (and simplify!) the call to target_include_directories() in the top-level CMakeLists.txt.
+
+    Build and Run
+        Make a new directory called Step3_build, run the cmake executable or the cmake-gui to configure the project and then build it with your chosen build tool or by using cmake --build . from the build directory. 
+        Here's a refresher of what that looks like from the command line:
+            mkdir Step3_build
+            cd Step3_build
+            cmake ..
+            cmake --build .
+        
+        Next, use the newly built Tutorial and verify that it is working as expected.
+        
+    Solution
+        Let's update the code from the previous step to use the modern CMake approach of usage requirements.
+        ※We want to state that anybody linking to MathFunctions needs to include the current source directory, while MathFunctions itself doesn't. 
+        ※This can be expressed with an INTERFACE usage requirement. Remember INTERFACE means things that consumers require but the producer doesn't.
+
+        At the end of MathFunctions/CMakeLists.txt, use target_include_directories() with the INTERFACE keyword, as follows:
+            TODO 1: Click to show/hide answer
+            TODO 1: MathFunctions/CMakeLists.txt
+            target_include_directories(MathFunctions
+                INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
+                )
+        
+        Now that we've specified usage requirements for MathFunctions we can safely remove our uses of the EXTRA_INCLUDES variable from the top-level CMakeLists.txt, here:
+            TODO 2: Click to show/hide answer
+            TODO 2: CMakeLists.txt
+            if(USE_MYMATH)
+              add_subdirectory(MathFunctions)
+              list(APPEND EXTRA_LIBS MathFunctions)
+            endif()
+        
+        And here:
+            TODO 3: Click to show/hide answer
+            TODO 3: CMakeLists.txt
+            target_include_directories(Tutorial PUBLIC
+                                       "${PROJECT_BINARY_DIR}"
+                                       )
+        
+        ※Notice that with this technique, the only thing our executable target does to use our library is call target_link_libraries() with the name of the library target. 
+        In larger projects, the classic method of specifying library dependencies manually becomes very complicated very quickly.
