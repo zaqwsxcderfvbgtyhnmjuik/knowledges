@@ -1,0 +1,194 @@
+/// this is a topoc about adding a library ///
+
+introduction
+    At this point, we have seen how to create a basic project using CMake. 
+    In this step, we will learn how to create and use a library in our project. 
+    We will also see how to make the use of our library optional.
+    ◆
+Exercise 1 - Creating a Library
+    To add a library in CMake, use the ★add_library() command and specify which source files should make up the library.
+
+    Rather than(而不是) placing all of the source files in one directory, we can organize our project with one or more subdirectories. 
+    In this case, we will create a subdirectory specifically for our library. Here, we can add a new CMakeLists.txt file and one or more source files. 
+    In the top level CMakeLists.txt file, we will use the ★add_subdirectory() command to add the subdirectory to the build.
+
+    Once the library is created, it is connected to our executable target with ★target_include_directories() and ★target_link_libraries().
+    
+    Goal
+        Add and use a library.
+    
+    Getting Started
+        In this exercise, we will add a library to our project that contains our own implementation for computing the square root of a number. 
+        The executable can then use this library instead of the standard square root function provided by the compiler.
+
+        For this tutorial we will put the library into a subdirectory called MathFunctions. 
+        This directory already contains a header file, MathFunctions.h, and a source file mysqrt.cxx. 
+        We will not need to modify either of these files. 
+        The source file has one function called mysqrt that provides similar functionality to the compiler's sqrt function.
+
+        From the Step2 directory, start with TODO 1 and complete through TODO 6.
+
+        First, fill in the one line CMakeLists.txt in the MathFunctions subdirectory.
+
+        Next, edit the top level CMakeLists.txt.
+
+        Finally, use the newly created MathFunctions library in tutorial.cxx
+
+    Build and Run
+        Run the cmake executable or the cmake-gui to configure the project and then build it with your chosen build tool.
+
+        Below is a refresher of(一个...的回顾) what that looks like from the command line:
+            mkdir Step2_build
+            cd Step2_build
+            cmake ..
+            cmake --build .
+        Try to use the newly built Tutorial and ensure that it is still producing accurate square root values.
+    
+    Solution
+        In the CMakeLists.txt file in the MathFunctions directory, we create a library target called MathFunctions with add_library(). 
+        The source file for the library is passed as an argument to add_library(). This looks like the following line:
+            TODO 1: Click to show/hide answer
+            TODO 1: MathFunctions/CMakeLists.txt
+            add_library(MathFunctions mysqrt.cxx)
+        
+        To make use of the new library we will add an add_subdirectory() call in the top-level CMakeLists.txt file so that the library will get built.
+            TODO 2: Click to show/hide answer
+            TODO 2: CMakeLists.txt
+            add_subdirectory(MathFunctions)
+        
+        Next, the new library target is linked to the executable target using target_link_libraries().
+            TODO 3: Click to show/hide answer
+            TODO 3: CMakeLists.txt
+            target_link_libraries(Tutorial PUBLIC MathFunctions)
+
+        Finally we need to specify the library's header file location. Modify target_include_directories() to add the MathFunctions subdirectory as an include directory so that the MathFunctions.h header file can be found.
+            TODO 4: Click to show/hide answer
+            TODO 4: CMakeLists.txt
+            target_include_directories(Tutorial PUBLIC
+                          "${PROJECT_BINARY_DIR}"
+                          "${PROJECT_SOURCE_DIR}/MathFunctions"
+                          )
+        
+        Now let's use our library. In tutorial.cxx, include MathFunctions.h:
+            TODO 5: Click to show/hide answer
+            TODO 5 : tutorial.cxx
+            #include "MathFunctions.h"
+
+        Lastly, replace sqrt with our library function mysqrt.
+            TODO 6: Click to show/hide answer
+            TODO 6 : tutorial.cxx
+            const double outputValue = mysqrt(inputValue);
+
+Exercise 2 - Making Our Library Optional
+    Now let us make the MathFunctions library optional(将库设置为可选的). While(虽然) for the tutorial there really isn't any need to do so, for larger projects this is a common occurrence(大型项目是很常见的).
+    CMake can do this using the ★option() command. This gives users a variable which they can change when configuring their cmake build. This setting will be stored in the cache so that the user does not need to set the value each time they run CMake on a build directory.
+
+    Goal
+        Add the option to build without MathFunctions library.
+    
+    Getting Started
+        Start with the resulting files from Exercise 1. Complete TODO 7 through TODO 13.
+
+        First create a variable USE_MYMATH using the option() command in the top-level CMakeLists.txt file. 
+        In that same file, use that option to determine whether to build and use the MathFunctions library.
+
+        Then, update tutorial.cxx and TutorialConfig.h.in to use USE_MYMATH.
+
+    Build and Run
+        Since we have our build directory already configured from Exercise 1, we can rebuild by simply calling the following:
+            cd Step2_build
+            cmake --build .
+        Next, run the Tutorial executable on a few numbers to verify that it's still correct.
+
+        Now let's update the value of USE_MYMATH to OFF. The easiest way is to use the cmake-gui or ccmake if you're in the terminal. Or, alternatively(另外), if you want to change the option from the command-line, try:
+            cmake ../Step2 -DUSE_MYMATH=OFF
+        
+        Now, rebuild the code with the following:
+            cmake --build .
+        
+        Then, run the executable again to ensure that it still works with USE_MYMATH set to OFF. Which function gives better results, sqrt or mysqrt?
+    
+    Solution
+        The first step is to add an option to the top-level CMakeLists.txt file. 
+        This option will be displayed in the cmake-gui and ccmake with a default value of ON that can be changed by the user.
+            TODO 7: Click to show/hide answer
+            TODO 7: CMakeLists.txt
+            option(USE_MYMATH "Use tutorial provided math implementation" ON)
+        
+        Next, make building and linking the MathFunctions library conditional.
+        Start by creating a list() of the optional library targets for our project. At the moment, it is just MathFunctions. Let's name our list EXTRA_LIBS.
+        Similarly, we need to make a list() for the optional includes which we will call EXTRA_INCLUDES. In this list, we will APPEND the path of the header file needed for our library.
+        Next, create an if() statement which checks the value of USE_MYMATH. Inside the if() block, put the add_subdirectory() command from Exercise 1 with the additional list() commands.
+        When USE_MYMATH is ON, the lists will be generated and will be added to our project. When USE_MYMATH is OFF, the lists stay empty. With this strategy, we allow users to toggle(切换) USE_MYMATH to manipulate(操纵) what library is used in the build.
+        The top-level CMakeLists.txt file will now look like the following:
+            TODO 8: Click to show/hide answer
+            TODO 8: CMakeLists.txt
+            ★if(USE_MYMATH)
+              add_subdirectory(MathFunctions)
+              ★list(APPEND EXTRA_LIBS MathFunctions)
+              ★list(APPEND EXTRA_INCLUDES "${PROJECT_SOURCE_DIR}/MathFunctions")
+            ★endif()
+        
+        Now that we have these two lists, we need to update target_link_libraries() and target_include_directories() to use them. 
+        Changing them is fairly straightforward(相当简单).
+        For target_link_libraries(), we replace the written out library names with EXTRA_LIBS. This looks like the following:
+            TODO 9: Click to show/hide answer
+            TODO 9: CMakeLists.txt
+            target_link_libraries(Tutorial PUBLIC ${EXTRA_LIBS})
+        
+        Then, we do the same thing with target_include_directories() and EXTRA_INCLUDES.
+            TODO 10: Click to show/hide answer
+            TODO 10 : CMakeLists.txt
+            target_include_directories(Tutorial PUBLIC
+                           "${PROJECT_BINARY_DIR}"
+                           ${EXTRA_INCLUDES}
+                           )
+        ※Note that this is a classic approach when dealing with many components. We will cover the modern approach in the Step 3 of the tutorial.
+
+        The corresponding changes to the source code are fairly straightforward. First, in tutorial.cxx, we include the MathFunctions.h header if USE_MYMATH is defined.
+            TODO 11: Click to show/hide answer
+            TODO 11 : tutorial.cxx
+            #ifdef USE_MYMATH
+            #  include "MathFunctions.h"
+            #endif
+        
+        Then, in the same file, we make USE_MYMATH control which square root function is used:
+            TODO 12: Click to show/hide answer
+            TODO 12 : tutorial.cxx
+            #ifdef USE_MYMATH
+              const double outputValue = mysqrt(inputValue);
+            #else
+              const double outputValue = sqrt(inputValue);
+            #endif
+
+        Since the source code now requires USE_MYMATH we can add it to TutorialConfig.h.in with the following line:
+            TODO 13: Click to show/hide answer
+            TODO 13 : TutorialConfig.h.in
+            #cmakedefine USE_MYMATH
+        
+        With these changes, our library is now completely optional to whoever is building and using it.
+
+    Bonus Question
+        Why is it important that we configure TutorialConfig.h.in after the option for USE_MYMATH? What would happen if we inverted the two?
+
+    Answer
+        Click to show/hide answer
+        ※We configure after because TutorialConfig.h.in uses the value of USE_MYMATH. If we configure the file before calling option(), we won't be using the expected value of USE_MYMATH.
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+            
